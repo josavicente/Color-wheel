@@ -62,3 +62,16 @@ Los hitos pendientes están en [tasks-color-wheel.md](tasks-color-wheel.md). La 
 - [x] Retirar todas las referencias al proveedor externo de interfaz, documentación, scripts y datos generados.
 - [x] Renombrar los artefactos técnicos a términos neutrales de catálogo.
 - [x] Comprobar con búsqueda global y navegador que no aparece ninguna referencia.
+
+## Iteración — equivalencias de mezcla y móvil
+
+- [x] Mostrar las cinco pinturas más cercanas bajo el resultado del mezclador, con muestra, gama, referencia y HEX.
+- [x] Conservar el acceso de un toque para usar una equivalencia en la rueda.
+- [x] Ajustar densidad, objetivos táctiles y disposición del mezclador/catálogo para pantallas de 375 px.
+- [x] Verificar interacción de equivalencias, mezcla múltiple y vista móvil; ejecutar tipos y build.
+
+### Revisión
+
+- A 375 px, el mezclador presenta cinco equivalencias táctiles bajo su resultado antes de las acciones de paleta.
+- Verificado que una equivalencia actualiza la rueda con su HEX exacto (`#9F9E67`).
+- `npm run check`, `npm run build` y `git diff --check` superados.

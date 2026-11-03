@@ -16,7 +16,7 @@ Para comprobar y crear la compilación de producción:
     npm run check
     npm run build
 
-La aplicación permite explorar una rueda RYB/RGB continua y una rueda ampliada con anillos claros, medios y profundos; crear y editar paletas; combinar hasta seis colores con proporciones; guardar copias locales; recuperar acciones; exportar un PNG y reutilizar los valores como JSON o variables CSS.
+La aplicación permite explorar una rueda RYB/RGB continua y una rueda ampliada con anillos claros, medios y profundos; crear y editar paletas; combinar hasta seis colores con proporciones y ver sus equivalencias de pintura; guardar copias locales; recuperar acciones; exportar un PNG y reutilizar los valores como JSON o variables CSS. La interfaz se adapta a móvil con controles táctiles y una sola columna para el catálogo.
 
 Incluye una biblioteca local de 7.376 pinturas de 62 gamas, con búsqueda por nombre, referencia o HEX, y muestra las cinco coincidencias más cercanas al color actual. El selector de gamas mantiene su orden de sincronización. Al seleccionar una pintura, su HEX se conserva exactamente en modo RGB.
 
