@@ -62,6 +62,43 @@ export function mixHex(left: string, right: string, amount: number) {
   return rgbToHex({ r: start.r + (end.r - start.r) * t, g: start.g + (end.g - start.g) * t, b: start.b + (end.b - start.b) * t })
 }
 
+export function mixManyHex(colors: Array<{ hex: string; weight: number }>) {
+  const totalWeight = colors.reduce((total, color) => total + Math.max(0, color.weight), 0)
+  if (!totalWeight) return '#000000'
+  const channels = colors.reduce((total, color) => {
+    const rgb = hexToRgb(color.hex)
+    const weight = Math.max(0, color.weight)
+    return { r: total.r + rgb.r * weight, g: total.g + rgb.g * weight, b: total.b + rgb.b * weight }
+  }, { r: 0, g: 0, b: 0 })
+  return rgbToHex({ r: channels.r / totalWeight, g: channels.g / totalWeight, b: channels.b / totalWeight })
+}
+
+function linearChannel(channel: number) {
+  const value = channel / 255
+  return value <= .04045 ? value / 12.92 : ((value + .055) / 1.055) ** 2.4
+}
+
+function oklab(hex: string) {
+  const { r, g, b } = hexToRgb(hex)
+  const red = linearChannel(r)
+  const green = linearChannel(g)
+  const blue = linearChannel(b)
+  const l = Math.cbrt(.4122214708 * red + .5363325363 * green + .0514459929 * blue)
+  const m = Math.cbrt(.2119034982 * red + .6806995451 * green + .1073969566 * blue)
+  const s = Math.cbrt(.0883024619 * red + .2817188376 * green + .6299787005 * blue)
+  return {
+    l: .2104542553 * l + .793617785 * m - .0040720468 * s,
+    a: 1.9779984951 * l - 2.428592205 * m + .4505937099 * s,
+    b: .0259040371 * l + .7827717662 * m - .808675766 * s,
+  }
+}
+
+export function colorDistance(left: string, right: string) {
+  const a = oklab(left)
+  const b = oklab(right)
+  return (a.l - b.l) ** 2 + (a.a - b.a) ** 2 + (a.b - b.b) ** 2
+}
+
 export function contrastText(hex: string) {
   const channels = Object.values(hexToRgb(hex)).map((channel) => {
     const value = channel / 255

@@ -17,3 +17,15 @@ Regla: cuando las herramientas de proyecto requieran una versión concreta de No
 El control preciso de luz y croma no basta para explorar: obliga a anticipar visualmente el resultado y hace lentas tareas simples, como encontrar un verde oscuro.
 
 Regla: para una edición continua importante, ofrecer una exploración visual directa además de controles numéricos. En la rueda, mantener el matiz elegido y mostrar una cuadrícula de tonos y saturaciones seleccionables de un clic.
+
+## 2026-11-03 — La exploración ampliada debe conservar la metáfora de rueda
+
+La cuadrícula de tonos resolvía el acceso rápido, pero se alejaba de la rueda física que el usuario quería utilizar y hacía menos evidente la relación entre matiz, claros y oscuros.
+
+Regla: cuando se amplíe una interacción radial, mantener los valores en anillos concéntricos del propio selector. Los controles siguen ofreciendo precisión, pero los claros, medios y profundos se seleccionan visualmente dentro de la rueda.
+
+## 2026-11-03 — Verificar los canales de datos además de los términos de la interfaz
+
+El usuario señaló una API pública de PaintPad que expone, de forma estructurada, gama, nombre, referencia y HEX. La lectura de términos generales de la web no sustituye comprobar el canal técnico concreto que el usuario haya indicado.
+
+Regla: antes de descartar una integración de datos públicos, verificar sus endpoints, su contrato y la forma de acceso. Documentar la fuente y mantener la sincronización reproducible, sin inferir ni forzar identificadores.
