@@ -12,6 +12,8 @@ const seed = [
   newColor('#CF5C42', 'Terracota'),
   newColor('#E8DED0', 'Marfil'),
 ]
+const expandedLightness = [88, 76, 64, 52, 40, 28, 16]
+const expandedSaturation = [18, 34, 50, 66, 82, 100]
 
 function exportPng(palette: PaletteColor[], title: string, dark: boolean, showHex: boolean) {
   const width = 1600
@@ -78,6 +80,7 @@ function App() {
   const [exportOpen, setExportOpen] = useState(false)
   const [exportDark, setExportDark] = useState(false)
   const [showHex, setShowHex] = useState(true)
+  const [wheelExpanded, setWheelExpanded] = useState(false)
   const [mixTarget, setMixTarget] = useState('#F6B328')
   const [mixAmount, setMixAmount] = useState(50)
   const [harmony, setHarmony] = useState<'Complementaria' | 'Tríada' | 'Análoga'>('Complementaria')
@@ -88,6 +91,14 @@ function App() {
     const offsets = harmony === 'Complementaria' ? [0, 180] : harmony === 'Tríada' ? [0, 120, 240] : [-28, 0, 28]
     return offsets.map((offset) => wheelColor(hue + offset, mode, saturation, lightness))
   }, [harmony, hue, mode, saturation, lightness])
+  const expandedColors = useMemo(
+    () => expandedLightness.flatMap((nextLightness) => expandedSaturation.map((nextSaturation) => ({
+      lightness: nextLightness,
+      saturation: nextSaturation,
+      hex: wheelColor(hue, mode, nextSaturation, nextLightness),
+    }))),
+    [hue, mode],
+  )
 
   useEffect(() => { localStorage.setItem(STORAGE_KEY, JSON.stringify({ palette, title, library })) }, [palette, title, library])
   useEffect(() => {
@@ -170,10 +181,10 @@ function App() {
     </nav>
     <section className="workspace" aria-label="Espacio de experimentación">
       <div className="wheel-stage">
-        <div className="wheel-meta"><span>Rueda {mode === 'ryb' ? 'artística RYB' : 'digital RGB'}</span><button onClick={() => setMode(mode === 'ryb' ? 'rgb' : 'ryb')}>Cambiar a {mode === 'ryb' ? 'RGB' : 'RYB'} ↗</button></div>
-        <div ref={wheel} className={`color-wheel ${mode}`} role="application" aria-label="Rueda de color; el control de matiz permite ajuste con teclado" onPointerDown={(event) => { event.currentTarget.setPointerCapture(event.pointerId); pick(event.clientX, event.clientY) }} onPointerMove={(event) => { if (event.currentTarget.hasPointerCapture(event.pointerId)) pick(event.clientX, event.clientY) }}>
+        <div className="wheel-meta"><span>Rueda {mode === 'ryb' ? 'artística RYB' : 'digital RGB'}</span><span className="wheel-switches"><button onClick={() => setMode(mode === 'ryb' ? 'rgb' : 'ryb')}>Cambiar a {mode === 'ryb' ? 'RGB' : 'RYB'} ↗</button><button className={wheelExpanded ? 'active' : ''} onClick={() => setWheelExpanded((value) => !value)}>{wheelExpanded ? 'Volver a rueda' : 'Rueda ampliada'} ↗</button></span></div>
+        {wheelExpanded ? <div className="expanded-wheel" aria-label="Rueda ampliada: tonos y saturaciones del matiz seleccionado"><div className="expanded-axis"><span>claro</span><span>profundo</span></div><div className="expanded-grid">{expandedColors.map((color) => <button key={`${color.saturation}-${color.lightness}`} className={color.saturation === saturation && color.lightness === lightness ? 'selected' : ''} style={{ background: color.hex, color: contrastText(color.hex) }} onClick={() => { setSaturation(color.saturation); setLightness(color.lightness) }} aria-label={`Seleccionar ${color.hex}: saturación ${color.saturation}%, luz ${color.lightness}%`}><span>{color.hex}</span></button>)}</div><div className="expanded-axis horizontal"><span>apagado</span><span>saturado</span></div><p>Elige directamente un tono claro, medio o profundo del matiz actual.</p></div> : <div ref={wheel} className={`color-wheel ${mode}`} role="application" aria-label="Rueda de color; el control de matiz permite ajuste con teclado" onPointerDown={(event) => { event.currentTarget.setPointerCapture(event.pointerId); pick(event.clientX, event.clientY) }} onPointerMove={(event) => { if (event.currentTarget.hasPointerCapture(event.pointerId)) pick(event.clientX, event.clientY) }}>
           <div className="wheel-grain" /><div className="wheel-center"><span>COLOR<br />ACTUAL</span><strong>{active}</strong></div><i className="wheel-marker" style={{ transform: `rotate(${hue}deg) translateY(-50%)` }} />
-        </div>
+        </div>}
         <div className="wheel-scale"><span>R · Rojo</span><span>A · Amarillo</span><span>B · Azul</span></div>
       </div>
       <aside className="inspector">

@@ -16,7 +16,7 @@ Para comprobar y crear la compilación de producción:
     npm run check
     npm run build
 
-La aplicación permite explorar una rueda RYB/RGB continua, crear y editar paletas, guardar copias locales, recuperar acciones, exportar un PNG y reutilizar los valores como JSON o variables CSS.
+La aplicación permite explorar una rueda RYB/RGB continua y una rueda ampliada de tonos y saturaciones, crear y editar paletas, guardar copias locales, recuperar acciones, exportar un PNG y reutilizar los valores como JSON o variables CSS.
 
 - [Plan de implementación, funciones iniciales y mejoras futuras](docs/plan-implementacion.md)
 - [Hitos de implementación](tasks/tasks-color-wheel.md)
