@@ -41,3 +41,9 @@ Regla: cuando una fuente publica un índice específico de rangos, usar ese índ
 El usuario no quiere que el producto ni su documentación nombren el origen externo de las pinturas.
 
 Regla: presentar esta funcionalidad como un catálogo propio de pinturas; no mostrar, enlazar ni citar el proveedor en interfaz, textos o documentos del repositorio.
+
+## 2026-11-04 — El runtime de producción no debe depender del gestor local
+
+El script de build delegaba siempre en fnm y exigía una versión que el entorno de despliegue no proporciona, aunque el runtime gestionado del proveedor fuera compatible con la aplicación.
+
+Regla: fijar una versión LTS soportada por el proveedor en `engines`, y ejecutar directamente cuando el runtime ya alcanza el mínimo. Mantener el gestor local solo como respaldo para terminales de desarrollo obsoletas.

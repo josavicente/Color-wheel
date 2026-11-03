@@ -75,3 +75,14 @@ Los hitos pendientes están en [tasks-color-wheel.md](tasks-color-wheel.md). La 
 - A 375 px, el mezclador presenta cinco equivalencias táctiles bajo su resultado antes de las acciones de paleta.
 - Verificado que una equivalencia actualiza la rueda con su HEX exacto (`#9F9E67`).
 - `npm run check`, `npm run build` y `git diff --check` superados.
+
+## Corrección de despliegue — 4 de noviembre de 2026
+
+- [x] Identificar que el fallo procede de la dependencia de fnm en el build remoto.
+- [x] Fijar una versión LTS admitida por Vercel y ejecutar el runtime remoto directamente.
+- [x] Verificar el build y publicar la corrección.
+
+### Revisión
+
+- `npm run check` y `npm run build` superados desde la terminal heredada.
+- Verificada además la rama directa del wrapper con un runtime moderno y su `PATH` de Node, que es la ruta utilizada en el build remoto.
