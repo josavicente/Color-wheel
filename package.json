@@ -10,7 +10,8 @@
     "dev": "node scripts/with-node.mjs ./node_modules/.bin/vite",
     "build": "node scripts/with-node.mjs ./node_modules/.bin/tsc -b && node scripts/with-node.mjs ./node_modules/.bin/vite build",
     "preview": "node scripts/with-node.mjs ./node_modules/.bin/vite preview",
-    "check": "node scripts/with-node.mjs ./node_modules/.bin/tsc -b --pretty false"
+    "check": "node scripts/with-node.mjs ./node_modules/.bin/tsc -b --pretty false",
+    "sync:paintpad": "node scripts/with-node.mjs scripts/sync-paintpad-catalog.mjs"
   },
   "dependencies": {
     "react": "^19.3.1",

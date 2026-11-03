@@ -30,3 +30,18 @@ Los hitos pendientes están en [tasks-color-wheel.md](tasks-color-wheel.md). La 
 - Entregados rueda RYB/RGB continua, controles de color, armonías básicas, mezclador, paleta local editable, bloqueos, reordenación, deshacer/rehacer y exportación PNG.
 - Verificados comprobación de tipos, build de producción, la interacción de añadir muestra y la vista previa/acción de descarga PNG en el navegador.
 - Pendientes para una siguiente iteración: variantes, armonías adicionales, biblioteca de paletas, JSON/CSS/enlaces, accesibilidad exhaustiva y validación móvil.
+
+## Iteración — rueda concéntrica y mezclas múltiples
+
+- [x] Confirmar la fuente solicitada para el catálogo: se usará la API pública de PaintPad indicada por el usuario, que ofrece pinturas, marca/rango, códigos de fabricante y HEX.
+- [x] Sustituir la cuadrícula de la "Rueda ampliada" por anillos claros, base y oscuros integrados en la rueda.
+- [x] Permitir varios colores de aporte y proporciones editables en el mezclador.
+- [x] Mantener la exportación PNG de paletas y verificar el diálogo y la generación Canvas; el navegador automatizado no expone el evento de descarga.
+- [x] Documentar las llamadas reproducibles a la API pública PaintPad y sus alias de rango conocidos.
+- [x] Ejecutar comprobación de tipos, build y revisión de la interacción en navegador.
+
+## Revisión — 3 de noviembre de 2026
+
+- `npm run check`, `npm run build` y `git diff --check` superados.
+- Validado en navegador: carga diferida del catálogo, búsqueda de Squid Orange, selección que conserva `#F49444`, coincidencias por similitud OKLab, mezclador con un tercer aporte y activación por teclado del anillo profundo.
+- La prueba automatizada de descarga PNG no recibió un evento de descarga del navegador, pero el diálogo, la previsualización y la acción `canvas.toBlob(..., 'image/png')` permanecen activos.
