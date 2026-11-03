@@ -86,3 +86,15 @@ Los hitos pendientes están en [tasks-color-wheel.md](tasks-color-wheel.md). La 
 
 - `npm run check` y `npm run build` superados desde la terminal heredada.
 - Verificada además la rama directa del wrapper con un runtime moderno y su `PATH` de Node, que es la ruta utilizada en el build remoto.
+
+## Iteración — tipo de pintura
+
+- [x] Mostrar el tipo de cada pintura como etiqueta independiente de su referencia.
+- [x] Mantener la lectura compacta de nombre, gama, código, HEX y tipo en móvil.
+- [x] Verificar búsqueda por tipo, tipos y build.
+
+### Revisión
+
+- Cada ficha presenta el tipo suministrado por su gama (por ejemplo, Base, Shade, Contrast o Metallic) en una etiqueta separada de la referencia.
+- Validado en navegador: la búsqueda `Shade` devuelve 233 pinturas y conserva el tipo individual en cada resultado.
+- `npm run check`, `npm run build` y `git diff --check` superados.
