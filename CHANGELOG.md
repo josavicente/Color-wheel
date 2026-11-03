@@ -9,6 +9,8 @@
 - Documentadas las llamadas de API, identificadores numéricos de las gamas y alias de tres caracteres comprobados.
 - El selector de gamas ahora se genera explícitamente desde el índice público `/paints/by-range`; añadidos los alias validados `TTC` y `WTP`.
 - Neutralizada la presentación del catálogo: la aplicación y la documentación lo muestran como biblioteca propia de pinturas, sin referencias al proveedor de origen.
+- El resultado del mezclador muestra ahora las cinco equivalencias de pintura más cercanas; se pueden tocar para llevar su HEX exacto a la rueda.
+- Ajustada la experiencia móvil: cabecera de rueda flexible y equivalencias táctiles de 44 px.
 - Los scripts npm seleccionan Node 26.13.0 mediante fnm, incluso desde terminales ya abiertas con Node 18.
 - Primera entrega de ColorWheel: rueda continua RYB/RGB, armonías, mezclas, variaciones y un editor de paletas.
 - Guardado local, historial de cambios, biblioteca local y salidas PNG, JSON y variables CSS.
