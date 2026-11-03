@@ -33,11 +33,11 @@ Los hitos pendientes están en [tasks-color-wheel.md](tasks-color-wheel.md). La 
 
 ## Iteración — rueda concéntrica y mezclas múltiples
 
-- [x] Confirmar la fuente solicitada para el catálogo: se usará la API pública de PaintPad indicada por el usuario, que ofrece pinturas, marca/rango, códigos de fabricante y HEX.
+- [x] Confirmar la fuente solicitada para el catálogo: se usará un origen público con gama, nombre, referencia y HEX.
 - [x] Sustituir la cuadrícula de la "Rueda ampliada" por anillos claros, base y oscuros integrados en la rueda.
 - [x] Permitir varios colores de aporte y proporciones editables en el mezclador.
 - [x] Mantener la exportación PNG de paletas y verificar el diálogo y la generación Canvas; el navegador automatizado no expone el evento de descarga.
-- [x] Documentar las llamadas reproducibles a la API pública PaintPad y sus alias de rango conocidos.
+- [x] Documentar la sincronización reproducible del catálogo y sus alias de rango conocidos.
 - [x] Ejecutar comprobación de tipos, build y revisión de la interacción en navegador.
 
 ## Revisión — 3 de noviembre de 2026
@@ -46,7 +46,7 @@ Los hitos pendientes están en [tasks-color-wheel.md](tasks-color-wheel.md). La 
 - Validado en navegador: carga diferida del catálogo, búsqueda de Squid Orange, selección que conserva `#F49444`, coincidencias por similitud OKLab, mezclador con un tercer aporte y activación por teclado del anillo profundo.
 - La prueba automatizada de descarga PNG no recibió un evento de descarga del navegador, pero el diálogo, la previsualización y la acción `canvas.toBlob(..., 'image/png')` permanecen activos.
 
-## Corrección PaintPad — 3 de noviembre de 2026
+## Corrección de catálogo — 3 de noviembre de 2026
 
 - [x] Validar los 31 aliases de tres caracteres suministrados por el usuario contra la API pública.
 - [x] Alimentar el selector de gamas desde el índice de `/paints/by-range` generado por la sincronización.
@@ -56,3 +56,9 @@ Los hitos pendientes están en [tasks-color-wheel.md](tasks-color-wheel.md). La 
 
 - Los 31 endpoints respondieron correctamente con pinturas.
 - En navegador, el selector inicia con el mismo orden que el índice: AK Interactive, AK Interactive 3rd Generation Acrylics, AK Interactive Abteilung 502 y AK Interactive Acrylic Washes.
+
+## Corrección de presentación — 3 de noviembre de 2026
+
+- [x] Retirar todas las referencias al proveedor externo de interfaz, documentación, scripts y datos generados.
+- [x] Renombrar los artefactos técnicos a términos neutrales de catálogo.
+- [x] Comprobar con búsqueda global y navegador que no aparece ninguna referencia.
