@@ -11,6 +11,10 @@
 - Neutralizada la presentación del catálogo: la aplicación y la documentación lo muestran como biblioteca propia de pinturas, sin referencias al proveedor de origen.
 - El resultado del mezclador muestra ahora las cinco equivalencias de pintura más cercanas; se pueden tocar para llevar su HEX exacto a la rueda.
 - Ajustada la experiencia móvil: cabecera de rueda flexible y equivalencias táctiles de 44 px.
+
+## 2026-11-04
+
+- Configurado el build de producción para Node 24.x y eliminado el requisito de fnm en runtimes compatibles.
 - Los scripts npm seleccionan Node 26.13.0 mediante fnm, incluso desde terminales ya abiertas con Node 18.
 - Primera entrega de ColorWheel: rueda continua RYB/RGB, armonías, mezclas, variaciones y un editor de paletas.
 - Guardado local, historial de cambios, biblioteca local y salidas PNG, JSON y variables CSS.

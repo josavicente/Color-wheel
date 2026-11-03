@@ -6,7 +6,7 @@ Estado: primera entrega funcional implementada.
 
 ## Ejecutar localmente
 
-El proyecto usa Node 26.13.0. Los scripts usan esa versión mediante fnm aunque la terminal abierta conserve un Node anterior; .node-version hace que las terminales nuevas la seleccionen automáticamente.
+El despliegue usa Node 24.x, versión LTS disponible en Vercel. Los scripts locales aceptan Node 24 o superior; desde una terminal antigua usan la versión gestionada con fnm para evitar incompatibilidades.
 
     npm install
     npm run dev
