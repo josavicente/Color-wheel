@@ -18,13 +18,13 @@ Para comprobar y crear la compilación de producción:
 
 La aplicación permite explorar una rueda RYB/RGB continua y una rueda ampliada con anillos claros, medios y profundos; crear y editar paletas; combinar hasta seis colores con proporciones; guardar copias locales; recuperar acciones; exportar un PNG y reutilizar los valores como JSON o variables CSS.
 
-Incluye una biblioteca local de 7.376 pinturas de 62 gamas de PaintPad, con búsqueda por nombre, referencia o HEX, y muestra las cinco coincidencias más cercanas al color actual. El selector de gamas sigue el índice público de PaintPad y mantiene su orden. Al seleccionar una pintura, su HEX se conserva exactamente en modo RGB.
+Incluye una biblioteca local de 7.376 pinturas de 62 gamas, con búsqueda por nombre, referencia o HEX, y muestra las cinco coincidencias más cercanas al color actual. El selector de gamas mantiene su orden de sincronización. Al seleccionar una pintura, su HEX se conserva exactamente en modo RGB.
 
-Para refrescar el catálogo desde la API pública de PaintPad:
+Para refrescar el catálogo desde un origen compatible:
 
-    npm run sync:paintpad
+    npm run sync:catalog -- <origen-del-catalogo>
 
 - [Plan de implementación, funciones iniciales y mejoras futuras](docs/plan-implementacion.md)
 - [Hitos de implementación](tasks/tasks-color-wheel.md)
 - [Seguimiento de la planificación](tasks/todo.md)
-- [Llamadas e identificadores de la API de PaintPad](docs/paintpad-api.md)
+- [Guía del catálogo de pinturas](docs/catalogo-pinturas.md)

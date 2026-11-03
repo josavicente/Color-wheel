@@ -26,7 +26,7 @@ Regla: cuando se amplíe una interacción radial, mantener los valores en anillo
 
 ## 2026-11-03 — Verificar los canales de datos además de los términos de la interfaz
 
-El usuario señaló una API pública de PaintPad que expone, de forma estructurada, gama, nombre, referencia y HEX. La lectura de términos generales de la web no sustituye comprobar el canal técnico concreto que el usuario haya indicado.
+El usuario señaló una API pública que expone, de forma estructurada, gama, nombre, referencia y HEX. La lectura de términos generales de la web no sustituye comprobar el canal técnico concreto que el usuario haya indicado.
 
 Regla: antes de descartar una integración de datos públicos, verificar sus endpoints, su contrato y la forma de acceso. Documentar la fuente y mantener la sincronización reproducible, sin inferir ni forzar identificadores.
 
@@ -35,3 +35,9 @@ Regla: antes de descartar una integración de datos públicos, verificar sus end
 Derivar las opciones del selector a partir de las pinturas normalizadas puede alterar el orden y dejar ambiguo qué entidad es marca o gama.
 
 Regla: cuando una fuente publica un índice específico de rangos, usar ese índice para el selector y para la sincronización. No inferir las opciones a partir de registros secundarios ni de nombres abreviados.
+
+## 2026-11-03 — Neutralidad de la presentación del catálogo
+
+El usuario no quiere que el producto ni su documentación nombren el origen externo de las pinturas.
+
+Regla: presentar esta funcionalidad como un catálogo propio de pinturas; no mostrar, enlazar ni citar el proveedor en interfaz, textos o documentos del repositorio.
