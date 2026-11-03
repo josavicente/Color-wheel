@@ -45,3 +45,14 @@ Los hitos pendientes están en [tasks-color-wheel.md](tasks-color-wheel.md). La 
 - `npm run check`, `npm run build` y `git diff --check` superados.
 - Validado en navegador: carga diferida del catálogo, búsqueda de Squid Orange, selección que conserva `#F49444`, coincidencias por similitud OKLab, mezclador con un tercer aporte y activación por teclado del anillo profundo.
 - La prueba automatizada de descarga PNG no recibió un evento de descarga del navegador, pero el diálogo, la previsualización y la acción `canvas.toBlob(..., 'image/png')` permanecen activos.
+
+## Corrección PaintPad — 3 de noviembre de 2026
+
+- [x] Validar los 31 aliases de tres caracteres suministrados por el usuario contra la API pública.
+- [x] Alimentar el selector de gamas desde el índice de `/paints/by-range` generado por la sincronización.
+- [x] Regenerar documentación, comprobar build y publicar la corrección.
+
+### Revisión
+
+- Los 31 endpoints respondieron correctamente con pinturas.
+- En navegador, el selector inicia con el mismo orden que el índice: AK Interactive, AK Interactive 3rd Generation Acrylics, AK Interactive Abteilung 502 y AK Interactive Acrylic Washes.

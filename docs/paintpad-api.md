@@ -1,10 +1,10 @@
 # API pública de PaintPad
 
-Actualizado con `npm run sync:paintpad`. La sincronización primero lee la página pública de gamas y después consulta la API de pinturas para cada gama.
+Actualizado con `npm run sync:paintpad`. La sincronización primero lee la página pública de gamas y después consulta la API de pinturas para cada gama. El selector de gamas de ColorWheel usa ese mismo índice y respeta su orden.
 
 ## Contrato
 
-- `GET https://paintpad.app/paints/by-range`: descubre las rutas públicas de las gamas.
+- `GET https://paintpad.app/paints/by-range`: índice de las gamas públicas; es la fuente del selector.
 - `GET https://paintpad.app/paints/:slug`: permite resolver el `paintRangeId` numérico presente en la página.
 - `GET https://paintpad.app/api/paints?paint_range_id=<id>`: devuelve `{ paints: [...] }`, con `name`, `fullIdentifier`, `manufacturerCode`, `type` y `swatchStyle.color` (HEX cuando existe).
 
@@ -28,7 +28,7 @@ Los alias siguientes son los códigos de tres caracteres conocidos; no se infier
 | `FP3` | Formula P3 | `GET /api/paints?paint_range_id=FP3` |
 | `GSW` | Green Stuff World | `GET /api/paints?paint_range_id=GSW` |
 | `KKO` | Kimera Kolors | `GET /api/paints?paint_range_id=KKO` |
-| `MPA` | Monument Hobbies Pro Acryl | `GET /api/paints?paint_range_id=MPA` |
+| `MPA` | Monument Creature Caster Pro Acryl | `GET /api/paints?paint_range_id=MPA` |
 | `SCA` | Scale75 Scalecolor Artist | `GET /api/paints?paint_range_id=SCA` |
 | `SCC` | Scale75 Scalecolor | `GET /api/paints?paint_range_id=SCC` |
 | `SCF` | Scale75 Scalecolor Floww | `GET /api/paints?paint_range_id=SCF` |
@@ -37,6 +37,7 @@ Los alias siguientes son los códigos de tres caracteres conocidos; no se infier
 | `SPE` | Scale75 Prism Effect | `GET /api/paints?paint_range_id=SPE` |
 | `SQC` | Vallejo Squidmar Color | `GET /api/paints?paint_range_id=SQC` |
 | `TAM` | Tamiya | `GET /api/paints?paint_range_id=TAM` |
+| `TTC` | Two Thin Coats | `GET /api/paints?paint_range_id=TTC` |
 | `VGA` | Vallejo Game Air | `GET /api/paints?paint_range_id=VGA` |
 | `VHS` | Vallejo Hobby Spray Paint | `GET /api/paints?paint_range_id=VHS` |
 | `VMA` | Vallejo Model Air | `GET /api/paints?paint_range_id=VMA` |
@@ -46,6 +47,7 @@ Los alias siguientes son los códigos de tres caracteres conocidos; no se infier
 | `VMW` | Vallejo Model Wash | `GET /api/paints?paint_range_id=VMW` |
 | `VSP` | Vallejo Surface Primer | `GET /api/paints?paint_range_id=VSP` |
 | `VXP` | Vallejo Xpress | `GET /api/paints?paint_range_id=VXP` |
+| `WTP` | Warhammer Tone Pro | `GET /api/paints?paint_range_id=WTP` |
 
 ## Llamadas de sincronización actuales
 

@@ -7,6 +7,7 @@
 - La rueda ampliada ahora se mantiene circular: tres anillos clicables ofrecen versiones profundas, medias y claras del matiz.
 - El mezclador admite el color actual y hasta cinco aportes adicionales, con partes independientes por color.
 - Documentadas las llamadas de API, identificadores numéricos de las gamas y alias de tres caracteres comprobados.
+- El selector de gamas ahora se genera explícitamente desde el índice público `/paints/by-range`; añadidos los alias validados `TTC` y `WTP`.
 - Los scripts npm seleccionan Node 26.13.0 mediante fnm, incluso desde terminales ya abiertas con Node 18.
 - Primera entrega de ColorWheel: rueda continua RYB/RGB, armonías, mezclas, variaciones y un editor de paletas.
 - Guardado local, historial de cambios, biblioteca local y salidas PNG, JSON y variables CSS.

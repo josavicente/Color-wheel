@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { colorDistance, contrastText, hexToHsl, mixHex, mixManyHex, newColor, normalizeHue, PaletteColor, wheelColor } from './color'
-import type { PaintCatalogEntry } from './data/paintpad-catalog'
+import type { PaintCatalogEntry, PaintpadRange } from './data/paintpad-catalog'
 
 type Tool = 'explore' | 'harmony' | 'mix'
 type WheelMode = 'ryb' | 'rgb'
@@ -92,6 +92,7 @@ function App() {
   const [paintLimit, setPaintLimit] = useState(30)
   const [paintCatalog, setPaintCatalog] = useState<PaintCatalogEntry[]>([])
   const [paintCatalogUpdatedAt, setPaintCatalogUpdatedAt] = useState('')
+  const [paintRangeIndex, setPaintRangeIndex] = useState<PaintpadRange[]>([])
   const [exactHex, setExactHex] = useState<string | null>(null)
   const [harmony, setHarmony] = useState<'Complementaria' | 'Tríada' | 'Análoga'>('Complementaria')
   const wheel = useRef<HTMLDivElement>(null)
@@ -101,7 +102,7 @@ function App() {
     const offsets = harmony === 'Complementaria' ? [0, 180] : harmony === 'Tríada' ? [0, 120, 240] : [-28, 0, 28]
     return offsets.map((offset) => wheelColor(hue + offset, mode, saturation, lightness))
   }, [harmony, hue, mode, saturation, lightness])
-  const paintRanges = useMemo(() => [...new Set(paintCatalog.map((paint) => paint.range))].sort((left, right) => left.localeCompare(right)), [paintCatalog])
+  const paintRanges = useMemo(() => paintRangeIndex.map((range) => range.name), [paintRangeIndex])
   const closePaints = useMemo(() => [...paintCatalog]
     .sort((left, right) => colorDistance(active, left.hex) - colorDistance(active, right.hex))
     .slice(0, 5), [active, paintCatalog])
@@ -118,6 +119,7 @@ function App() {
     void import('./data/paintpad-catalog').then((catalog) => {
       setPaintCatalog(catalog.paintpadCatalog)
       setPaintCatalogUpdatedAt(catalog.paintpadCatalogUpdatedAt)
+      setPaintRangeIndex(catalog.paintpadRanges)
     })
   }, [])
   useEffect(() => {
