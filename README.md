@@ -6,7 +6,7 @@ Estado: primera entrega funcional implementada.
 
 ## Ejecutar localmente
 
-El proyecto usa Node 26.13.0. Si tienes fnm instalado, la versión se activa al entrar en la carpeta gracias a .node-version.
+El proyecto usa Node 26.13.0. Los scripts usan esa versión mediante fnm aunque la terminal abierta conserve un Node anterior; .node-version hace que las terminales nuevas la seleccionen automáticamente.
 
     npm install
     npm run dev

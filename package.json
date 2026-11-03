@@ -7,10 +7,10 @@
     "node": ">=26.13.0"
   },
   "scripts": {
-    "dev": "vite",
-    "build": "tsc -b && vite build",
-    "preview": "vite preview",
-    "check": "tsc -b --pretty false"
+    "dev": "node scripts/with-node.mjs ./node_modules/.bin/vite",
+    "build": "node scripts/with-node.mjs ./node_modules/.bin/tsc -b && node scripts/with-node.mjs ./node_modules/.bin/vite build",
+    "preview": "node scripts/with-node.mjs ./node_modules/.bin/vite preview",
+    "check": "node scripts/with-node.mjs ./node_modules/.bin/tsc -b --pretty false"
   },
   "dependencies": {
     "react": "^19.3.1",
