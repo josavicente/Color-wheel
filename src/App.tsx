@@ -46,7 +46,7 @@ function exportPng(palette: PaletteColor[], matches: PaintCatalogEntry[][], titl
   const gap = 28
   const columns = palette.length === 1 ? 1 : 2
   const cardWidth = (width - margin * 2 - gap * (columns - 1)) / columns
-  const rowHeights = Array.from({ length: Math.ceil(palette.length / columns) }, (_, row) => Math.max(...palette.slice(row * columns, row * columns + columns).map((_, column) => 170 + (matches[row * columns + column]?.length || 0) * 44)))
+  const rowHeights = Array.from({ length: Math.ceil(palette.length / columns) }, (_, row) => Math.max(...palette.slice(row * columns, row * columns + columns).map((_, column) => 170 + (matches[row * columns + column]?.length || 0) * 56)))
   const height = 220 + rowHeights.reduce((total, rowHeight) => total + rowHeight, 0) + gap * Math.max(0, rowHeights.length - 1) + margin
   const canvas = document.createElement('canvas')
   canvas.width = width * scale
@@ -83,15 +83,17 @@ function exportPng(palette: PaletteColor[], matches: PaintCatalogEntry[][], titl
     context.font = '600 13px monospace'
     context.fillText('PINTURAS CORRESPONDIENTES', x, y + 148)
     matches[index]?.forEach((paint, paintIndex) => {
-      const paintY = y + 168 + paintIndex * 44
+      const paintY = y + 168 + paintIndex * 56
       context.fillStyle = paint.hex
       context.fillRect(x, paintY, 26, 26)
       context.fillStyle = ink
       context.font = '600 16px Georgia, serif'
       context.fillText(paint.name, x + 38, paintY + 13)
       context.fillStyle = dark ? '#B7B3AA' : '#716F67'
-      context.font = '500 11px monospace'
-      context.fillText(`${paint.range} · ${paint.code || paint.type} · ${paint.hex}`, x + 38, paintY + 29)
+      context.font = '500 10px monospace'
+      context.fillText(`Marca · ${paintBrand(paint)}`, x + 38, paintY + 29)
+      context.font = '500 9px monospace'
+      context.fillText(`Gama · ${paint.range} · ${paint.code || paint.type} · ${paint.hex}`, x + 38, paintY + 43)
     })
   })
   canvas.toBlob((blob) => {

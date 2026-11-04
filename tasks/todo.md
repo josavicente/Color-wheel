@@ -90,7 +90,7 @@ Los hitos pendientes están en [tasks-color-wheel.md](tasks-color-wheel.md). La 
 
 ### Revisión
 
-- Verificada en navegador una paleta de tres muestras: la cabecera no ofrece exportación, el Estudio sí y cada ficha muestra ocho equivalencias.
+- Verificada en navegador una paleta de tres muestras: la cabecera no ofrece exportación, el Estudio sí y cada ficha muestra ocho equivalencias; el PNG añade por cada una marca, gama, referencia o tipo y HEX.
 - Confirmada la descarga de un PNG con el aviso de equivalencias y el layout sin desbordamiento horizontal a 375 px.
 - `npm run check`, `npm run build` y `git diff --check` superados; comprobada también la ausencia de la referencia externa prohibida fuera de los assets.
 
