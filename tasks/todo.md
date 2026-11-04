@@ -15,6 +15,19 @@ Fecha: 3 de noviembre de 2026. Rama: `codex/plan-color-wheel`.
 
 Los hitos pendientes están en [tasks-color-wheel.md](tasks-color-wheel.md). La primera entrega funcional ya implementa el recorrido de creación y exportación; quedan funciones y verificaciones de las fases 4 a 6.
 
+## Iteración — armonías ampliadas
+
+- [x] Añadir complementaria dividida, tétrada, cuadrada y monocromática al selector de armonías.
+- [x] Modelar sus posiciones y variaciones de luz en una única definición reutilizable.
+- [x] Corregir la incorporación completa para respetar el límite de doce muestras y añadir todos los colores elegidos en un único paso.
+- [x] Verificar las relaciones, la interfaz móvil, tipos, build y publicación.
+
+### Revisión
+
+- El selector presenta siete relaciones: complementaria, complementaria dividida, tríada, tétrada, cuadrada, análoga y monocromática; esta última adapta cuatro niveles de luz del mismo matiz.
+- Añadir una relación completa usa un único commit, respeta el máximo de doce muestras y muestra un aviso si la paleta queda llena.
+- `npm run check`, `npm run build` y `git diff --check` superados.
+
 ## Corrección — catálogo de pinturas independiente
 
 - [x] Trasladar el catálogo desde el final del Estudio a una vista dedicada con URL de hash propia.

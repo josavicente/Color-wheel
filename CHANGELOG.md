@@ -14,6 +14,7 @@
 
 ## 2026-11-04
 
+- Ampliadas las armonías con complementaria dividida, tétrada, cuadrada y monocromática; la acción de añadir relación completa incorpora todas las muestras posibles de una vez.
 - El catálogo de pinturas se traslada a una vista independiente, accesible desde la cabecera, con filtros y retorno directo al Estudio al elegir un color.
 - Configurada la URL pública de Vercel en canonical, metadatos sociales, schema, sitemap y `robots.txt`; el generador SEO usa el runtime moderno del proyecto.
 - Unificado el icono del navegador con el distintivo cromático de la cabecera y versionada su URL para renovar la caché del favicon.
