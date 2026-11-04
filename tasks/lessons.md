@@ -65,3 +65,9 @@ Regla: colocar las acciones de entrega junto al artefacto que producen y conserv
 Un favicon recreado por separado puede no coincidir con el distintivo que el usuario reconoce en la cabecera y, además, quedar retenido por la caché del navegador.
 
 Regla: servir el favicon y la marca visible desde el mismo activo versionado; así se mantiene una única fuente visual y se fuerza la actualización al cambiarlo.
+
+## 2026-11-04 — El descubrimiento profundo debe vivir fuera del flujo de creación
+
+El catálogo completo aporta valor cuando se busca una pintura concreta, pero situado tras el Estudio obliga a atravesar el recorrido de creación para llegar a una tarea de consulta distinta.
+
+Regla: separar las superficies de descubrimiento extensas en vistas dedicadas, manteniendo un acceso directo desde la navegación y un retorno claro al contexto creativo.
