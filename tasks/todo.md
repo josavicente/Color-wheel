@@ -98,3 +98,23 @@ Los hitos pendientes están en [tasks-color-wheel.md](tasks-color-wheel.md). La 
 - Cada ficha presenta el tipo suministrado por su gama (por ejemplo, Base, Shade, Contrast o Metallic) en una etiqueta separada de la referencia.
 - Validado en navegador: la búsqueda `Shade` devuelve 233 pinturas y conserva el tipo individual en cada resultado.
 - `npm run check`, `npm run build` y `git diff --check` superados.
+
+## Iteración — marcas favoritas y equivalencias de paleta
+
+- [x] Persistir las marcas favoritas en el espacio de trabajo local, con selección y retirada accesibles.
+- [x] Limitar las sugerencias de pintura del color activo, del mezclador y de cada muestra de la paleta a las marcas favoritas cuando existan.
+- [x] Añadir equivalencias compactas bajo cada color del Estudio de color, manteniendo la cuadrícula legible en móvil.
+- [x] Actualizar documentación de producto, comprobar tipos, build, comportamiento persistente y disposición móvil.
+
+### Diseño y aceptación
+
+- Sin marcas elegidas, las sugerencias usan todo el catálogo; al elegir una o más, no aparece ninguna sugerencia de una marca distinta.
+- El catálogo sigue siendo explorable completo: las preferencias afectan a recomendaciones, no al descubrimiento manual.
+- Cada muestra de la paleta muestra hasta tres equivalencias y permite tocar una para llevar ese HEX a la rueda.
+
+### Revisión
+
+- El selector presenta 29 marcas agrupadas; las preferencias se guardan junto con la paleta en el navegador y se pueden retirar individualmente o limpiar por completo.
+- Sin preferencias, el catálogo completo continúa alimentando todas las sugerencias. La lista manual del catálogo nunca queda filtrada por las marcas favoritas.
+- Validado en navegador: cuatro muestras renderizan tres equivalencias cada una; a 375 px, el selector de marcas pasa a una sola columna y las cuatro listas compactas siguen presentes.
+- `npm run check`, `npm run build` y `git diff --check` superados.
