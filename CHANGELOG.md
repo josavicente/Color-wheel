@@ -14,7 +14,7 @@
 
 ## 2026-11-04
 
-- La exportación PNG se traslada al Estudio de color e incorpora hasta ocho equivalencias por muestra, con nombre, gama, referencia y HEX.
+- La exportación PNG se traslada al Estudio de color e incorpora hasta ocho equivalencias por muestra, con nombre, marca, gama, referencia o tipo y HEX.
 - Configurado el build de producción para Node 24.x y eliminado el requisito de fnm en runtimes compatibles.
 - Los scripts npm seleccionan Node 26.13.0 mediante fnm, incluso desde terminales ya abiertas con Node 18.
 - Las fichas de la biblioteca ahora identifican el tipo de pintura como una etiqueta independiente y permiten buscarlo.
