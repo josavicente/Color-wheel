@@ -14,6 +14,7 @@
 
 ## 2026-11-04
 
+- Añadida la herramienta Foto: analiza la imagen localmente, permite extraer entre 4 y 12 colores predominantes y crear o ampliar una paleta con sus equivalencias de pintura.
 - La exportación PNG se traslada al Estudio de color e incorpora hasta ocho equivalencias por muestra, con nombre, marca, gama, referencia o tipo y HEX.
 - Configurado el build de producción para Node 24.x y eliminado el requisito de fnm en runtimes compatibles.
 - Los scripts npm seleccionan Node 26.13.0 mediante fnm, incluso desde terminales ya abiertas con Node 18.
