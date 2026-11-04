@@ -6,6 +6,7 @@ import { extractImagePalette } from './image-palette'
 type Tool = 'explore' | 'harmony' | 'mix' | 'image'
 type WheelMode = 'ryb' | 'rgb'
 type Page = 'studio' | 'brands' | 'catalog'
+type Harmony = 'Complementaria' | 'Complementaria dividida' | 'Tríada' | 'Tétrada' | 'Cuadrada' | 'Análoga' | 'Monocromática'
 type SavedPalette = { id: string; title: string; palette: PaletteColor[] }
 type MixColor = { id: string; hex: string; parts: number }
 
@@ -21,6 +22,16 @@ const wheelBands = [
   { id: 'base', lightness: 50, label: 'Medio' },
   { id: 'light', lightness: 76, label: 'Claro' },
 ]
+const harmonyOptions: Harmony[] = ['Complementaria', 'Complementaria dividida', 'Tríada', 'Tétrada', 'Cuadrada', 'Análoga', 'Monocromática']
+const harmonyDefinitions: Record<Harmony, Array<{ hue: number; lightnessOffset?: number; saturationScale?: number }>> = {
+  Complementaria: [{ hue: 0 }, { hue: 180 }],
+  'Complementaria dividida': [{ hue: 0 }, { hue: 150 }, { hue: 210 }],
+  Tríada: [{ hue: 0 }, { hue: 120 }, { hue: 240 }],
+  Tétrada: [{ hue: 0 }, { hue: 60 }, { hue: 180 }, { hue: 240 }],
+  Cuadrada: [{ hue: 0 }, { hue: 90 }, { hue: 180 }, { hue: 270 }],
+  Análoga: [{ hue: -30 }, { hue: 0 }, { hue: 30 }],
+  Monocromática: [{ hue: 0, lightnessOffset: -30, saturationScale: .92 }, { hue: 0, lightnessOffset: -10, saturationScale: .96 }, { hue: 0, lightnessOffset: 10 }, { hue: 0, lightnessOffset: 30, saturationScale: .82 }],
+}
 const PALETTE_MATCH_LIMIT = 8
 
 function paintBrand(paint: PaintCatalogEntry) {
@@ -137,7 +148,7 @@ function App() {
   const [paintCatalogUpdatedAt, setPaintCatalogUpdatedAt] = useState('')
   const [paintRangeIndex, setPaintRangeIndex] = useState<PaintRange[]>([])
   const [exactHex, setExactHex] = useState<string | null>(null)
-  const [harmony, setHarmony] = useState<'Complementaria' | 'Tríada' | 'Análoga'>('Complementaria')
+  const [harmony, setHarmony] = useState<Harmony>('Complementaria')
   const wheel = useRef<HTMLDivElement>(null)
   const imageInput = useRef<HTMLInputElement>(null)
   const imageData = useRef<ImageData | null>(null)
@@ -150,10 +161,7 @@ function App() {
   const [imageStatus, setImageStatus] = useState('Elige una foto para empezar.')
   const active = useMemo(() => exactHex ?? wheelColor(hue, mode, saturation, lightness), [exactHex, hue, mode, saturation, lightness])
   const mix = useMemo(() => mixManyHex([{ hex: active, weight: 1 }, ...mixColors.map((color) => ({ hex: color.hex, weight: color.parts }))]), [active, mixColors])
-  const harmonyColors = useMemo(() => {
-    const offsets = harmony === 'Complementaria' ? [0, 180] : harmony === 'Tríada' ? [0, 120, 240] : [-28, 0, 28]
-    return offsets.map((offset) => wheelColor(hue + offset, mode, saturation, lightness))
-  }, [harmony, hue, mode, saturation, lightness])
+  const harmonyColors = useMemo(() => harmonyDefinitions[harmony].map((definition) => wheelColor(hue + definition.hue, mode, Math.max(0, Math.min(100, saturation * (definition.saturationScale ?? 1))), Math.max(8, Math.min(92, lightness + (definition.lightnessOffset ?? 0))))), [harmony, hue, mode, saturation, lightness])
   const paintRanges = useMemo(() => paintRangeIndex.map((range) => range.name), [paintRangeIndex])
   const paintBrands = useMemo(() => [...new Set(paintCatalog.map(paintBrand))].sort((left, right) => left.localeCompare(right, 'es')), [paintCatalog])
   const suggestedPaintCatalog = useMemo(() => favoriteBrands.length
@@ -298,6 +306,13 @@ function App() {
   const addFavoriteBrand = (brand: string) => {
     if (brand && !favoriteBrands.includes(brand)) toggleFavoriteBrand(brand)
   }
+  const addHarmonyColors = () => {
+    const colors = harmonyColors.slice(0, 12 - palette.length)
+    if (!colors.length) { setNotice('Llegaste a 12 colores. Edita o elimina una muestra para continuar.'); return }
+    commit([...palette, ...colors.map((color, index) => newColor(color, `${harmony} ${index + 1}`))])
+    setSelected(palette.length)
+    setNotice(colors.length < harmonyColors.length ? `Se añadieron ${colors.length} colores; el Estudio ha llegado a 12.` : `${harmony} añadida al Estudio.`)
+  }
   const useImageColor = (hex: string) => {
     setMode('rgb')
     pickHex(hex)
@@ -381,7 +396,7 @@ function App() {
           <div className="button-row"><button className="primary-action" onClick={() => add()}>+ Añadir a la paleta</button><button className="ghost-action" disabled={selected === null || palette[selected]?.locked} onClick={() => replace(active)}>Sustituir</button></div>
           <div className="variation-set"><p>Variaciones rápidas</p><div>{[['Blanco', '#FFFFFF'], ['Gris', '#8A8A84'], ['Negro', '#11120F']].map(([name, target]) => <button key={name} style={{ background: mixHex(active, target, .42), color: contrastText(mixHex(active, target, .42)) }} onClick={() => add(mixHex(active, target, .42), `${name} de ${active}`)}>{name}</button>)}</div></div>
         </>}
-        {tool === 'harmony' && <><p className="panel-kicker">Relaciones sobre la rueda</p><h2>Deja que el<br /><em>color responda.</em></h2><div className="harmony-options">{(['Complementaria', 'Tríada', 'Análoga'] as const).map((option) => <button key={option} className={option === harmony ? 'selected' : ''} onClick={() => setHarmony(option)}>{option}</button>)}</div><div className="harmony-samples">{harmonyColors.map((color, index) => <button key={`${color}-${index}`} style={{ background: color, color: contrastText(color) }} onClick={() => add(color, `${harmony} ${index + 1}`)}>{color}</button>)}</div><p className="help-copy">Elige una muestra concreta o incorpora toda la relación a tu colección.</p><button className="primary-action wide" onClick={() => harmonyColors.forEach((color, index) => add(color, `${harmony} ${index + 1}`))}>Añadir relación completa</button></>}
+        {tool === 'harmony' && <><p className="panel-kicker">Relaciones sobre la rueda</p><h2>Deja que el<br /><em>color responda.</em></h2><div className="harmony-options">{harmonyOptions.map((option) => <button key={option} className={option === harmony ? 'selected' : ''} onClick={() => setHarmony(option)}>{option}</button>)}</div><div className="harmony-samples">{harmonyColors.map((color, index) => <button key={`${color}-${index}`} style={{ background: color, color: contrastText(color) }} onClick={() => add(color, `${harmony} ${index + 1}`)}>{color}</button>)}</div><p className="help-copy">Elige una muestra concreta o incorpora toda la relación a tu colección.</p><button className="primary-action wide" onClick={addHarmonyColors}>Añadir relación completa</button></>}
         {tool === 'mix' && <><p className="panel-kicker">Mezcla digital</p><h2>Prueba sin<br /><em>gastar pintura.</em></h2><div className="mix-workbench"><div className="mix-base"><span style={{ background: active }} /><div><b>Color actual</b><small>{active} · 1 parte</small></div></div>{mixColors.map((color, index) => <div className="mix-input" key={color.id}><input type="color" value={color.hex} onChange={(event) => updateMixColor(color.id, { hex: event.target.value.toUpperCase() })} aria-label={`Color de mezcla ${index + 2}`} /><label>Color {index + 2}<input type="text" value={color.hex} maxLength={7} onChange={(event) => /^#?[0-9A-Fa-f]{0,6}$/.test(event.target.value) && updateMixColor(color.id, { hex: event.target.value.startsWith('#') ? event.target.value.toUpperCase() : `#${event.target.value.toUpperCase()}` })} /></label><label className="mix-parts">Partes <input type="range" min="1" max="8" value={color.parts} onChange={(event) => updateMixColor(color.id, { parts: Number(event.target.value) })} /><output>{color.parts}</output></label><button className="remove-mix" onClick={() => setMixColors((colors) => colors.filter((item) => item.id !== color.id))} aria-label={`Quitar color ${index + 2}`}>×</button></div>)}</div><button className="add-mix" onClick={addMixColor}>+ Añadir otro color</button><div className="mix-result"><span>Resultado</span><strong style={{ background: mix, color: contrastText(mix) }}>{mix}</strong></div><PaintMatches paints={closeMixPaints} loading={!paintCatalog.length} onPick={usePaint} label="Equivalencias de pintura" /><p className="help-copy">Cada parte pesa en el promedio de mezcla. Ajusta las partes para probar recetas de hasta seis colores.</p><div className="button-row"><button className="primary-action" onClick={() => add(mix, 'Mezcla')}>+ Añadir mezcla</button><button className="ghost-action" disabled={selected === null || palette[selected]?.locked} onClick={() => replace(mix)}>Sustituir</button></div></>}
       </aside>
       </>}
