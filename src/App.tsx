@@ -1,8 +1,9 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState, type RefObject } from 'react'
 import { colorDistance, contrastText, hexToHsl, mixHex, mixManyHex, newColor, normalizeHue, PaletteColor, wheelColor } from './color'
 import type { PaintCatalogEntry, PaintRange } from './data/paint-catalog'
+import { extractImagePalette } from './image-palette'
 
-type Tool = 'explore' | 'harmony' | 'mix'
+type Tool = 'explore' | 'harmony' | 'mix' | 'image'
 type WheelMode = 'ryb' | 'rgb'
 type Page = 'studio' | 'brands'
 type SavedPalette = { id: string; title: string; palette: PaletteColor[] }
@@ -138,6 +139,15 @@ function App() {
   const [exactHex, setExactHex] = useState<string | null>(null)
   const [harmony, setHarmony] = useState<'Complementaria' | 'Tríada' | 'Análoga'>('Complementaria')
   const wheel = useRef<HTMLDivElement>(null)
+  const imageInput = useRef<HTMLInputElement>(null)
+  const imageData = useRef<ImageData | null>(null)
+  const imagePreviewUrl = useRef<string | null>(null)
+  const imageLoad = useRef(0)
+  const [imagePreview, setImagePreview] = useState('')
+  const [imageName, setImageName] = useState('')
+  const [imageColors, setImageColors] = useState<string[]>([])
+  const [imageColorCount, setImageColorCount] = useState(6)
+  const [imageStatus, setImageStatus] = useState('Elige una foto para empezar.')
   const active = useMemo(() => exactHex ?? wheelColor(hue, mode, saturation, lightness), [exactHex, hue, mode, saturation, lightness])
   const mix = useMemo(() => mixManyHex([{ hex: active, weight: 1 }, ...mixColors.map((color) => ({ hex: color.hex, weight: color.parts }))]), [active, mixColors])
   const harmonyColors = useMemo(() => {
@@ -184,6 +194,13 @@ function App() {
     const timer = window.setTimeout(() => setNotice(''), 2600)
     return () => window.clearTimeout(timer)
   }, [notice])
+  useEffect(() => () => { if (imagePreviewUrl.current) URL.revokeObjectURL(imagePreviewUrl.current) }, [])
+  useEffect(() => {
+    if (!imageData.current) return
+    const colors = extractImagePalette(imageData.current, imageColorCount)
+    setImageColors(colors)
+    setImageStatus(`${colors.length} ${colors.length === 1 ? 'color detectado' : 'colores detectados'} en local.`)
+  }, [imageColorCount])
 
   const commit = (next: PaletteColor[]) => {
     setHistory((previous) => [...previous.slice(-99), palette])
@@ -271,6 +288,60 @@ function App() {
   const addFavoriteBrand = (brand: string) => {
     if (brand && !favoriteBrands.includes(brand)) toggleFavoriteBrand(brand)
   }
+  const useImageColor = (hex: string) => {
+    setMode('rgb')
+    pickHex(hex)
+    setNotice(`Color de foto ${hex} seleccionado`)
+  }
+  const loadImage = (file?: File) => {
+    if (!file) return
+    if (!file.type.startsWith('image/')) { setImageStatus('Elige un archivo de imagen válido.'); return }
+    if (file.size > 20 * 1024 * 1024) { setImageStatus('La foto supera 20 MB. Prueba con una versión más ligera.'); return }
+    const request = ++imageLoad.current
+    const previewUrl = URL.createObjectURL(file)
+    const image = new Image()
+    setImageStatus('Analizando colores en este dispositivo…')
+    image.onload = () => {
+      if (request !== imageLoad.current) { URL.revokeObjectURL(previewUrl); return }
+      const longestSide = Math.max(image.naturalWidth, image.naturalHeight)
+      const scale = Math.min(1, 320 / longestSide)
+      const canvas = document.createElement('canvas')
+      canvas.width = Math.max(1, Math.round(image.naturalWidth * scale))
+      canvas.height = Math.max(1, Math.round(image.naturalHeight * scale))
+      const context = canvas.getContext('2d')
+      if (!context) { URL.revokeObjectURL(previewUrl); setImageStatus('No se pudo preparar la imagen.'); return }
+      context.drawImage(image, 0, 0, canvas.width, canvas.height)
+      const data = context.getImageData(0, 0, canvas.width, canvas.height)
+      const colors = extractImagePalette(data, imageColorCount)
+      if (imagePreviewUrl.current) URL.revokeObjectURL(imagePreviewUrl.current)
+      imagePreviewUrl.current = previewUrl
+      imageData.current = data
+      setImagePreview(previewUrl)
+      setImageName(file.name)
+      setImageColors(colors)
+      setImageStatus(`${colors.length} ${colors.length === 1 ? 'color detectado' : 'colores detectados'} en local.`)
+    }
+    image.onerror = () => { URL.revokeObjectURL(previewUrl); if (request === imageLoad.current) setImageStatus('No se pudo leer esta imagen.') }
+    image.src = previewUrl
+  }
+  const createImagePalette = () => {
+    if (!imageColors.length) return
+    const next = imageColors.map((hex, index) => newColor(hex, `Foto ${String(index + 1).padStart(2, '0')}`))
+    commit(next)
+    setSelected(0)
+    useImageColor(imageColors[0])
+    setNotice(`Paleta de ${next.length} colores creada. Puedes deshacerla si lo necesitas.`)
+  }
+  const addImageColors = () => {
+    const available = 12 - palette.length
+    if (available <= 0) { setNotice('Tu Estudio ya tiene 12 colores. Libera una muestra para añadir la foto.'); return }
+    const colors = imageColors.slice(0, available)
+    if (!colors.length) return
+    commit([...palette, ...colors.map((hex, index) => newColor(hex, `Foto ${String(index + 1).padStart(2, '0')}`))])
+    setSelected(palette.length)
+    useImageColor(colors[0])
+    setNotice(colors.length < imageColors.length ? `Se añadieron ${colors.length} colores; el Estudio ha llegado a 12.` : `${colors.length} colores de foto añadidos al Estudio.`)
+  }
 
   return <main className="app-shell">
     <header className="site-header">
@@ -280,9 +351,10 @@ function App() {
     {page === 'brands' ? <BrandsPage brands={paintBrands} favorites={favoriteBrands} onToggle={toggleFavoriteBrand} onReturn={() => { window.location.hash = '#top' }} /> : <>
     <section className="intro" id="top"><div><p className="eyebrow">Herramienta de estudio</p><h1>Encuentra un color.<br /><em>Hazlo tuyo.</em></h1></div><p>Una rueda para explorar relaciones, guardar hallazgos y convertirlos en una paleta que puedas llevar contigo.</p></section>
     <nav className="tool-nav" aria-label="Herramientas de color">
-      {([['explore', '01', 'Explorar'], ['harmony', '02', 'Armonías'], ['mix', '03', 'Mezclar']] as [Tool, string, string][]).map(([id, number, label]) => <button key={id} className={tool === id ? 'tool-tab active' : 'tool-tab'} onClick={() => setTool(id)}><span>{number}</span>{label}</button>)}
+      {([['explore', '01', 'Explorar'], ['harmony', '02', 'Armonías'], ['mix', '03', 'Mezclar'], ['image', '04', 'Foto']] as [Tool, string, string][]).map(([id, number, label]) => <button key={id} className={tool === id ? 'tool-tab active' : 'tool-tab'} onClick={() => setTool(id)}><span>{number}</span>{label}</button>)}
     </nav>
     <section className="workspace" aria-label="Espacio de experimentación">
+      {tool === 'image' ? <ImagePaletteWorkspace preview={imagePreview} imageName={imageName} colors={imageColors} count={imageColorCount} status={imageStatus} fileInput={imageInput} onFile={loadImage} onCount={setImageColorCount} onUseColor={useImageColor} onCreate={createImagePalette} onAdd={addImageColors} canAdd={palette.length < 12} /> : <>
       <div className="wheel-stage">
         <div className="wheel-meta"><span>Rueda {mode === 'ryb' ? 'artística RYB' : 'digital RGB'}</span><span className="wheel-switches"><button onClick={() => { setExactHex(null); setMode(mode === 'ryb' ? 'rgb' : 'ryb') }}>Cambiar a {mode === 'ryb' ? 'RGB' : 'RYB'} ↗</button><button className={wheelExpanded ? 'active' : ''} onClick={() => setWheelExpanded((value) => !value)}>{wheelExpanded ? 'Volver a rueda' : 'Rueda ampliada'} ↗</button></span></div>
         <div ref={wheel} className={`color-wheel ${mode} ${wheelExpanded ? 'expanded' : ''}`} role="application" aria-label={wheelExpanded ? 'Rueda ampliada con anillos de colores claros, medios y profundos' : 'Rueda de color'} onPointerDown={(event) => { event.currentTarget.setPointerCapture(event.pointerId); pick(event.clientX, event.clientY) }} onPointerMove={(event) => { if (event.currentTarget.hasPointerCapture(event.pointerId)) pick(event.clientX, event.clientY) }}>
@@ -302,6 +374,7 @@ function App() {
         {tool === 'harmony' && <><p className="panel-kicker">Relaciones sobre la rueda</p><h2>Deja que el<br /><em>color responda.</em></h2><div className="harmony-options">{(['Complementaria', 'Tríada', 'Análoga'] as const).map((option) => <button key={option} className={option === harmony ? 'selected' : ''} onClick={() => setHarmony(option)}>{option}</button>)}</div><div className="harmony-samples">{harmonyColors.map((color, index) => <button key={`${color}-${index}`} style={{ background: color, color: contrastText(color) }} onClick={() => add(color, `${harmony} ${index + 1}`)}>{color}</button>)}</div><p className="help-copy">Elige una muestra concreta o incorpora toda la relación a tu colección.</p><button className="primary-action wide" onClick={() => harmonyColors.forEach((color, index) => add(color, `${harmony} ${index + 1}`))}>Añadir relación completa</button></>}
         {tool === 'mix' && <><p className="panel-kicker">Mezcla digital</p><h2>Prueba sin<br /><em>gastar pintura.</em></h2><div className="mix-workbench"><div className="mix-base"><span style={{ background: active }} /><div><b>Color actual</b><small>{active} · 1 parte</small></div></div>{mixColors.map((color, index) => <div className="mix-input" key={color.id}><input type="color" value={color.hex} onChange={(event) => updateMixColor(color.id, { hex: event.target.value.toUpperCase() })} aria-label={`Color de mezcla ${index + 2}`} /><label>Color {index + 2}<input type="text" value={color.hex} maxLength={7} onChange={(event) => /^#?[0-9A-Fa-f]{0,6}$/.test(event.target.value) && updateMixColor(color.id, { hex: event.target.value.startsWith('#') ? event.target.value.toUpperCase() : `#${event.target.value.toUpperCase()}` })} /></label><label className="mix-parts">Partes <input type="range" min="1" max="8" value={color.parts} onChange={(event) => updateMixColor(color.id, { parts: Number(event.target.value) })} /><output>{color.parts}</output></label><button className="remove-mix" onClick={() => setMixColors((colors) => colors.filter((item) => item.id !== color.id))} aria-label={`Quitar color ${index + 2}`}>×</button></div>)}</div><button className="add-mix" onClick={addMixColor}>+ Añadir otro color</button><div className="mix-result"><span>Resultado</span><strong style={{ background: mix, color: contrastText(mix) }}>{mix}</strong></div><PaintMatches paints={closeMixPaints} loading={!paintCatalog.length} onPick={usePaint} label="Equivalencias de pintura" /><p className="help-copy">Cada parte pesa en el promedio de mezcla. Ajusta las partes para probar recetas de hasta seis colores.</p><div className="button-row"><button className="primary-action" onClick={() => add(mix, 'Mezcla')}>+ Añadir mezcla</button><button className="ghost-action" disabled={selected === null || palette[selected]?.locked} onClick={() => replace(mix)}>Sustituir</button></div></>}
       </aside>
+      </>}
     </section>
     <section className="palette-area" aria-labelledby="palette-title"><div className="palette-heading"><div><p className="eyebrow">Tu colección</p><input id="palette-title" aria-label="Nombre de la paleta" value={title} onChange={(event) => setTitle(event.target.value)} /><p>{palette.length ? `${palette.length} / 12 muestras · se guarda en este dispositivo` : 'Elige un punto en la rueda para empezar'}</p></div><div className="palette-actions"><button className="export-button palette-export" disabled={!palette.length} onClick={() => setExportOpen(true)}>Exportar PNG ↗</button><button className="text-button" disabled={!palette.length} onClick={saveCopy}>Guardar copia</button><button className="text-button" disabled={!palette.length} onClick={() => downloadData(JSON.stringify({ v: 1, title, palette }, null, 2), 'paleta-colorwheel.json', 'application/json')}>JSON</button><button className="text-button" disabled={!palette.length} onClick={() => copy(palette.map((color, index) => `--color-${index + 1}: ${color.hex};`).join('\n'), 'Variables CSS copiadas')}>CSS</button><button className="text-button" disabled={!palette.length} onClick={share}>Compartir</button><button className="text-button danger" disabled={!palette.length} onClick={() => { commit([]); setSelected(null); setNotice('Paleta vaciada; puedes recuperarla con Deshacer.') }}>Vaciar</button></div></div>
       {palette.length ? <div className="palette-grid">{palette.map((color, index) => <article key={color.id} className={selected === index ? 'palette-card selected' : 'palette-card'} onClick={() => setSelected(index)}><div className="palette-chip" style={{ background: color.hex }}><span>{String(index + 1).padStart(2, '0')}</span><button className="lock-button" aria-label={color.locked ? 'Desbloquear muestra' : 'Bloquear muestra'} onClick={(event) => { event.stopPropagation(); update(index, { locked: !color.locked }) }}>{color.locked ? '●' : '○'}</button></div><div className="palette-card-body"><input className="color-name" value={color.name} onClick={(event) => event.stopPropagation()} onChange={(event) => update(index, { name: event.target.value })} aria-label={`Nombre del color ${index + 1}`} /><button className="hex" onClick={(event) => { event.stopPropagation(); copy(color.hex, 'HEX copiado') }}>{color.hex}</button><div className="card-controls"><input type="color" value={color.hex} disabled={color.locked} onClick={(event) => event.stopPropagation()} onChange={(event) => update(index, { hex: event.target.value.toUpperCase() })} aria-label={`Editar ${color.name}`} /><button disabled={index === 0} onClick={(event) => { event.stopPropagation(); move(index, -1) }}>←</button><button disabled={index === palette.length - 1} onClick={(event) => { event.stopPropagation(); move(index, 1) }}>→</button><button disabled={color.locked} onClick={(event) => { event.stopPropagation(); commit(palette.filter((_, position) => position !== index)); setSelected(null) }}>×</button></div><PaintMatches paints={palettePaintMatches[index]} loading={!paintCatalog.length} onPick={usePaint} label="Pinturas próximas" compact /></div></article>)}</div> : <div className="empty-palette"><span>+</span><p>Tu paleta está abierta.<br />Empieza por el color que te llame.</p><button className="primary-action" onClick={() => add()}>Añadir el color actual</button></div>}
@@ -320,6 +393,10 @@ function Control({ label, id, value, max, min = 0, suffix, onChange }: { label: 
 
 function PaintMatches({ paints, loading, onPick, label = 'Coincidencias en pinturas', compact = false }: { paints: PaintCatalogEntry[]; loading: boolean; onPick: (paint: PaintCatalogEntry) => void; label?: string; compact?: boolean }) {
   return <div className={compact ? 'paint-matches compact' : 'paint-matches'}><div><p>{label}</p><span>{loading ? 'cargando catálogo…' : `${paints.length} más cercanas`}</span></div>{paints.map((paint) => <button key={paint.id} onClick={(event) => { event.stopPropagation(); onPick(paint) }}><i style={{ background: paint.hex }} /><span><b>{paint.name}</b><small>{paint.range} · {paint.code || paint.type}</small></span><em>{paint.hex}</em></button>)}</div>
+}
+
+function ImagePaletteWorkspace({ preview, imageName, colors, count, status, fileInput, onFile, onCount, onUseColor, onCreate, onAdd, canAdd }: { preview: string; imageName: string; colors: string[]; count: number; status: string; fileInput: RefObject<HTMLInputElement | null>; onFile: (file?: File) => void; onCount: (count: number) => void; onUseColor: (hex: string) => void; onCreate: () => void; onAdd: () => void; canAdd: boolean }) {
+  return <div className="image-workspace"><section className="image-photo-pane" aria-labelledby="photo-upload-title"><div><p className="panel-kicker">Foto local</p><h2 id="photo-upload-title">Mira dentro<br /><em>de la imagen.</em></h2></div><div className={preview ? 'image-frame populated' : 'image-frame'} onDragOver={(event) => event.preventDefault()} onDrop={(event) => { event.preventDefault(); onFile(event.dataTransfer.files?.[0]) }}>{preview ? <img src={preview} alt={`Vista previa de ${imageName}`} /> : <div className="image-empty" aria-hidden="true"><span>▧</span><p>Arrastra una foto<br />o elígela debajo.</p></div>}</div><label className="image-upload"><span>{preview ? 'Analizar otra foto' : 'Elegir una foto'}</span><input ref={fileInput} type="file" accept="image/*" capture="environment" onChange={(event) => { onFile(event.target.files?.[0]); event.currentTarget.value = '' }} /></label><p className="image-local-note">Tu foto se analiza solo en este navegador; no se sube a ningún sitio.</p></section><aside className="image-inspector"><p className="panel-kicker">Extracción de color</p><h2>Elige cuántos<br /><em>tonos guardar.</em></h2><label className="image-count" htmlFor="image-color-count"><span>Colores a extraer <output>{count}</output></span><input id="image-color-count" type="range" min="4" max="12" value={count} onChange={(event) => onCount(Number(event.target.value))} /><small>De 4 a 12 colores predominantes.</small></label><p className="image-status" role="status" aria-live="polite">{status}</p>{colors.length ? <><div className="image-swatches" role="list" aria-label="Colores detectados">{colors.map((hex, index) => <button key={`${hex}-${index}`} role="listitem" style={{ background: hex, color: contrastText(hex) }} onClick={() => onUseColor(hex)} aria-label={`Usar ${hex} en la rueda`}><span>{String(index + 1).padStart(2, '0')}</span><b>{hex}</b></button>)}</div><p className="image-help">Toca una muestra para llevarla a la rueda. Al crear o añadir la paleta, las equivalencias de pintura aparecen en el Estudio.</p><div className="image-actions"><button className="primary-action" onClick={onCreate}>Crear paleta de {colors.length}</button><button className="ghost-action" onClick={onAdd} disabled={!canAdd}>Añadir al Estudio</button></div><p className="image-undo-note">Crear paleta sustituye el Estudio actual; siempre puedes deshacerlo.</p></> : <p className="image-help">La extracción aparecerá aquí al elegir una foto.</p>}</aside></div>
 }
 
 function BrandsPage({ brands, favorites, onToggle, onReturn }: { brands: string[]; favorites: string[]; onToggle: (brand: string) => void; onReturn: () => void }) {

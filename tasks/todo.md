@@ -15,6 +15,26 @@ Fecha: 3 de noviembre de 2026. Rama: `codex/plan-color-wheel`.
 
 Los hitos pendientes están en [tasks-color-wheel.md](tasks-color-wheel.md). La primera entrega funcional ya implementa el recorrido de creación y exportación; quedan funciones y verificaciones de las fases 4 a 6.
 
+## Iteración — extracción de paleta desde imagen
+
+- [x] Añadir una herramienta de foto con carga local, accesible por teclado y compatible con móvil.
+- [x] Reducir la imagen en el navegador y extraer de 4 a 12 colores predominantes sin enviarla a ningún servicio.
+- [x] Permitir inspeccionar los colores detectados, llevar uno a la rueda y añadir todos los posibles al Estudio de color sin sobrescribir la paleta.
+- [x] Verificar el análisis con una imagen real, la adaptación a 375 px, tipos, build y publicación.
+
+### Diseño y aceptación
+
+- La imagen se mantiene local: la interfaz lo comunica junto al control de carga.
+- El selector permite cualquier cantidad entera de 4 a 12 y recalcula el resultado sobre la misma foto.
+- Las muestras detectadas conservan HEX, son táctiles y se benefician de las equivalencias ya presentes al incorporarse al Estudio.
+
+### Revisión
+
+- Probada con la fotografía de referencia: seis y doce colores se calculan localmente al cambiar el control, y cada muestra puede llevarse a la rueda.
+- Verificada la creación de una paleta de doce colores y sus equivalencias de pintura; Deshacer restauró la paleta previa al terminar la prueba.
+- A 375 px, la vista de foto muestra las doce muestras sin desbordamiento horizontal.
+- `npm run check`, `npm run build` y `git diff --check` superados.
+
 ## Revisión
 
 - Propuesta documentada en [plan-implementacion.md](../docs/plan-implementacion.md): 12 grupos de funciones iniciales, hoja de ruta futura y 6 fases con aceptación.
