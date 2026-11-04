@@ -15,6 +15,17 @@ Fecha: 3 de noviembre de 2026. Rama: `codex/plan-color-wheel`.
 
 Los hitos pendientes están en [tasks-color-wheel.md](tasks-color-wheel.md). La primera entrega funcional ya implementa el recorrido de creación y exportación; quedan funciones y verificaciones de las fases 4 a 6.
 
+## Corrección — icono de navegador
+
+- [x] Unificar el distintivo de cabecera y el favicon en un único activo vectorial.
+- [x] Referenciar el favicon con una versión nueva para evitar que el navegador mantenga el anterior en caché.
+- [x] Verificar el HTML de producción, build y publicación.
+
+### Revisión
+
+- `colorwheel-mark.svg` es ahora el único distintivo compartido entre la cabecera y el `<head>`; el favicon se sirve con `?v=2`.
+- `npm run check`, build de producción, presencia del SVG en `dist` y `git diff --check` superados.
+
 ## Iteración — fundamentos SEO
 
 - [x] Auditar la superficie pública y corregir metadatos, rastreo y señales de contenido relevantes para la única URL indexable.

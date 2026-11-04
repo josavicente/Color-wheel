@@ -59,3 +59,9 @@ Regla: cuando una preferencia implique descubrir, comparar o gestionar una colec
 El botón global de PNG estaba disponible, pero separaba la salida del conjunto de colores y equivalencias que el usuario está preparando.
 
 Regla: colocar las acciones de entrega junto al artefacto que producen y conservar en la exportación el contexto práctico necesario para utilizarlo después.
+
+## 2026-11-04 — El favicon debe compartir el activo de marca visible
+
+Un favicon recreado por separado puede no coincidir con el distintivo que el usuario reconoce en la cabecera y, además, quedar retenido por la caché del navegador.
+
+Regla: servir el favicon y la marca visible desde el mismo activo versionado; así se mantiene una única fuente visual y se fuerza la actualización al cambiarlo.
