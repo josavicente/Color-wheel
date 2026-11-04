@@ -15,6 +15,25 @@ Fecha: 3 de noviembre de 2026. Rama: `codex/plan-color-wheel`.
 
 Los hitos pendientes están en [tasks-color-wheel.md](tasks-color-wheel.md). La primera entrega funcional ya implementa el recorrido de creación y exportación; quedan funciones y verificaciones de las fases 4 a 6.
 
+## Iteración — fundamentos SEO
+
+- [x] Auditar la superficie pública y corregir metadatos, rastreo y señales de contenido relevantes para la única URL indexable.
+- [x] Añadir título, descripción, metadatos sociales y datos estructurados fieles a las funcionalidades reales.
+- [x] Generar `robots.txt` y sitemap de producción a partir de un dominio explícito, sin inventar una URL canónica.
+- [x] Comprobar el HTML de producción y documentar la variable de despliegue necesaria.
+
+### Diseño y aceptación
+
+- La página se presenta como una rueda de color y generador de paletas para miniaturas, sin repetir términos artificialmente.
+- Los hashes de interfaz no se canonizan como páginas distintas.
+- El sitemap contiene solo URLs públicas reales y se omite antes que publicar una URL de ejemplo.
+
+### Revisión
+
+- El HTML de producción contiene título, descripción, robots, metadatos Open Graph/Twitter y `WebApplication` JSON-LD; la interfaz declara la intención de rueda de color para miniaturas en contenido visible.
+- Probados los sitemaps para una URL raíz y una subruta; ambos producen una sola URL canónica sin dobles barras. Sin `SITE_URL`, se sirve `robots.txt` sin sitemap.
+- `npm run check`, `npm run build` y `git diff --check` superados.
+
 ## Iteración — extracción de paleta desde imagen
 
 - [x] Añadir una herramienta de foto con carga local, accesible por teclado y compatible con móvil.
