@@ -18,6 +18,7 @@
 - Los scripts npm seleccionan Node 26.13.0 mediante fnm, incluso desde terminales ya abiertas con Node 18.
 - Las fichas de la biblioteca ahora identifican el tipo de pintura como una etiqueta independiente y permiten buscarlo.
 - Añadida una preferencia local de marcas favoritas que restringe todas las equivalencias de pintura; cada muestra del Estudio de color muestra tres equivalencias compactas.
+- Las marcas favoritas cuentan ahora con una página propia, tarjetas visuales con monogramas locales y selección por estrella.
 - Primera entrega de ColorWheel: rueda continua RYB/RGB, armonías, mezclas, variaciones y un editor de paletas.
 - Guardado local, historial de cambios, biblioteca local y salidas PNG, JSON y variables CSS.
 - Base React + TypeScript con Vite y requisito de Node 26.13.0.

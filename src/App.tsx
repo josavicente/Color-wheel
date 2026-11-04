@@ -4,6 +4,7 @@ import type { PaintCatalogEntry, PaintRange } from './data/paint-catalog'
 
 type Tool = 'explore' | 'harmony' | 'mix'
 type WheelMode = 'ryb' | 'rgb'
+type Page = 'studio' | 'brands'
 type SavedPalette = { id: string; title: string; palette: PaletteColor[] }
 type MixColor = { id: string; hex: string; parts: number }
 
@@ -27,6 +28,14 @@ function paintBrand(paint: PaintCatalogEntry) {
   if (paint.range.startsWith('Scale75')) return 'Scale75'
   if (paint.range.startsWith('Monument Hobbies')) return 'Monument Hobbies'
   return paint.range
+}
+
+function brandMonogram(brand: string) {
+  return brand.split(/\s+/).filter((word) => !['de', 'the', 'and'].includes(word.toLocaleLowerCase())).map((word) => word[0]).join('').slice(0, 3).toUpperCase()
+}
+
+function brandTone(brand: string) {
+  return `hsl(${[...brand].reduce((sum, character) => sum + character.charCodeAt(0), 0) % 360} 37% 28%)`
 }
 
 function exportPng(palette: PaletteColor[], title: string, dark: boolean, showHex: boolean) {
@@ -83,6 +92,7 @@ function App() {
   const [title, setTitle] = useState(saved.title || 'Estudio de color')
   const [library, setLibrary] = useState<SavedPalette[]>(saved.library || [])
   const [favoriteBrands, setFavoriteBrands] = useState<string[]>(Array.isArray(saved.favoriteBrands) ? saved.favoriteBrands : [])
+  const [page, setPage] = useState<Page>(() => window.location.hash === '#marcas' ? 'brands' : 'studio')
   const [tool, setTool] = useState<Tool>('explore')
   const [mode, setMode] = useState<WheelMode>('ryb')
   const [hue, setHue] = useState(210)
@@ -135,6 +145,11 @@ function App() {
     })
   }, [paintCatalog, paintRange, paintSearch])
   useEffect(() => { localStorage.setItem(STORAGE_KEY, JSON.stringify({ palette, title, library, favoriteBrands })) }, [favoriteBrands, palette, title, library])
+  useEffect(() => {
+    const syncPage = () => setPage(window.location.hash === '#marcas' ? 'brands' : 'studio')
+    window.addEventListener('hashchange', syncPage)
+    return () => window.removeEventListener('hashchange', syncPage)
+  }, [])
   useEffect(() => {
     void import('./data/paint-catalog').then((catalog) => {
       setPaintCatalog(catalog.paintCatalog)
@@ -226,17 +241,21 @@ function App() {
     pickHex(paint.hex)
     setNotice(`Color de pintura ${paint.hex} seleccionado`)
   }
+  const toggleFavoriteBrand = (brand: string) => {
+    const isFavorite = favoriteBrands.includes(brand)
+    setFavoriteBrands((brands) => isFavorite ? brands.filter((item) => item !== brand) : [...brands, brand])
+    setNotice(isFavorite ? `${brand} retirada de tus favoritas` : `${brand} añadida a tus favoritas`)
+  }
   const addFavoriteBrand = (brand: string) => {
-    if (!brand || favoriteBrands.includes(brand)) return
-    setFavoriteBrands((brands) => [...brands, brand])
-    setNotice(`${brand} añadida a tus marcas favoritas`)
+    if (brand && !favoriteBrands.includes(brand)) toggleFavoriteBrand(brand)
   }
 
   return <main className="app-shell">
     <header className="site-header">
       <a className="brand" href="#top"><i />ColorWheel</a><p className="eyebrow">Laboratorio de color / 01</p>
-      <div className="header-actions"><button className="text-button" onClick={undo} disabled={!history.length}>↶ Deshacer</button><button className="text-button" onClick={redo} disabled={!future.length}>Rehacer ↷</button><button className="export-button" onClick={() => setExportOpen(true)} disabled={!palette.length}>Exportar PNG ↗</button></div>
+      <div className="header-actions"><button className="text-button" onClick={() => { window.location.hash = page === 'brands' ? '#top' : '#marcas' }}>{page === 'brands' ? '← Estudio' : `Marcas${favoriteBrands.length ? ` · ${favoriteBrands.length}` : ''}`}</button>{page === 'studio' && <><button className="text-button" onClick={undo} disabled={!history.length}>↶ Deshacer</button><button className="text-button" onClick={redo} disabled={!future.length}>Rehacer ↷</button><button className="export-button" onClick={() => setExportOpen(true)} disabled={!palette.length}>Exportar PNG ↗</button></>}</div>
     </header>
+    {page === 'brands' ? <BrandsPage brands={paintBrands} favorites={favoriteBrands} onToggle={toggleFavoriteBrand} onReturn={() => { window.location.hash = '#top' }} /> : <>
     <section className="intro" id="top"><div><p className="eyebrow">Herramienta de estudio</p><h1>Encuentra un color.<br /><em>Hazlo tuyo.</em></h1></div><p>Una rueda para explorar relaciones, guardar hallazgos y convertirlos en una paleta que puedas llevar contigo.</p></section>
     <nav className="tool-nav" aria-label="Herramientas de color">
       {([['explore', '01', 'Explorar'], ['harmony', '02', 'Armonías'], ['mix', '03', 'Mezclar']] as [Tool, string, string][]).map(([id, number, label]) => <button key={id} className={tool === id ? 'tool-tab active' : 'tool-tab'} onClick={() => setTool(id)}><span>{number}</span>{label}</button>)}
@@ -269,6 +288,7 @@ function App() {
     {library.length > 0 && <section className="library" aria-label="Biblioteca de paletas"><p className="eyebrow">Biblioteca local · {library.length}</p><div>{library.map((entry) => <article key={entry.id}><button onClick={() => { commit(entry.palette); setTitle(entry.title); setSelected(null); setNotice('Paleta recuperada') }}><strong>{entry.title}</strong><span>{entry.palette.map((color) => color.hex).join(' · ')}</span></button><button className="remove-library" aria-label={`Eliminar ${entry.title}`} onClick={() => setLibrary((items) => items.filter((item) => item.id !== entry.id))}>×</button></article>)}</div></section>}
     {notice && <div className="toast" role="status">{notice}</div>}
     {exportOpen && <div className="modal-backdrop" onMouseDown={() => setExportOpen(false)}><section className="export-modal" role="dialog" aria-modal="true" aria-labelledby="export-title" onMouseDown={(event) => event.stopPropagation()}><button className="modal-close" onClick={() => setExportOpen(false)} aria-label="Cerrar">×</button><p className="eyebrow">Salida de estudio</p><h2 id="export-title">Tu paleta, <em>lista para salir.</em></h2><div className={exportDark ? 'export-preview dark' : 'export-preview'}>{palette.map((color) => <div key={color.id} style={{ background: color.hex, color: contrastText(color.hex) }}>{showHex && color.hex}</div>)}</div><div className="export-options"><fieldset><legend>Fondo</legend><button className={!exportDark ? 'selected' : ''} onClick={() => setExportDark(false)}>Claro</button><button className={exportDark ? 'selected' : ''} onClick={() => setExportDark(true)}>Oscuro</button></fieldset><label className="checkbox-label"><input type="checkbox" checked={showHex} onChange={(event) => setShowHex(event.target.checked)} /> Incluir HEX</label></div><div className="modal-footer"><p>PNG a 2× · 1600 × 1000 px</p><button className="primary-action" onClick={() => exportPng(palette, title, exportDark, showHex)}>Descargar PNG ↗</button></div></section></div>}
+    </>}
   </main>
 }
 
@@ -278,6 +298,13 @@ function Control({ label, id, value, max, min = 0, suffix, onChange }: { label: 
 
 function PaintMatches({ paints, loading, onPick, label = 'Coincidencias en pinturas', compact = false }: { paints: PaintCatalogEntry[]; loading: boolean; onPick: (paint: PaintCatalogEntry) => void; label?: string; compact?: boolean }) {
   return <div className={compact ? 'paint-matches compact' : 'paint-matches'}><div><p>{label}</p><span>{loading ? 'cargando catálogo…' : `${paints.length} más cercanas`}</span></div>{paints.map((paint) => <button key={paint.id} onClick={(event) => { event.stopPropagation(); onPick(paint) }}><i style={{ background: paint.hex }} /><span><b>{paint.name}</b><small>{paint.range} · {paint.code || paint.type}</small></span><em>{paint.hex}</em></button>)}</div>
+}
+
+function BrandsPage({ brands, favorites, onToggle, onReturn }: { brands: string[]; favorites: string[]; onToggle: (brand: string) => void; onReturn: () => void }) {
+  return <section className="brands-page" aria-labelledby="brands-page-title"><div className="brands-hero"><div><p className="eyebrow">Preferencias de pintura / local</p><h1 id="brands-page-title">Tu mesa,<br /><em>tus marcas.</em></h1><p>Marca tus favoritas y todas las equivalencias de color se ajustarán a ellas: en la rueda, las mezclas y tu Estudio de color.</p><button className="primary-action" onClick={onReturn}>← Volver al estudio</button></div><aside><span>{favorites.length}</span><p>{favorites.length === 1 ? 'marca favorita activa' : 'marcas favoritas activas'}</p><small>Se guarda en este navegador.</small></aside></div><div className="brands-grid">{brands.map((brand) => {
+    const favorite = favorites.includes(brand)
+    return <button key={brand} className={favorite ? 'brand-card favorite' : 'brand-card'} onClick={() => onToggle(brand)} aria-pressed={favorite} style={{ backgroundColor: brandTone(brand) }}><span className="brand-watermark" aria-hidden="true">{brandMonogram(brand)}</span><span className="brand-card-top"><i aria-hidden="true">{favorite ? '★' : '☆'}</i><small>{favorite ? 'Favorita' : 'Añadir'}</small></span><span className="brand-name">{brand}</span><span className="brand-card-action">{favorite ? 'Activa en sugerencias' : 'Usar en sugerencias'}</span></button>
+  })}</div></section>
 }
 
 export default App

@@ -76,6 +76,25 @@ Los hitos pendientes están en [tasks-color-wheel.md](tasks-color-wheel.md). La 
 - Verificado que una equivalencia actualiza la rueda con su HEX exacto (`#9F9E67`).
 - `npm run check`, `npm run build` y `git diff --check` superados.
 
+## Iteración — página de marcas favoritas
+
+- [x] Trasladar la selección de marcas desde el catálogo a una página dedicada accesible desde la cabecera.
+- [x] Mostrar todas las marcas como tarjetas con estrella de favorito y fondo editorial; conservar su preferencia local existente.
+- [x] Incorporar identificadores visuales locales por marca y evitar dependencias remotas frágiles.
+- [x] Verificar selección, persistencia, sugerencias filtradas, móvil y compilación; documentar y publicar.
+
+### Diseño y aceptación
+
+- La página debe permitir ver y alternar cualquier marca en un toque, y comunicar cuántas están activas.
+- La biblioteca conserva el catálogo manual; la cabecera ofrece acceso directo a la nueva página de preferencias.
+- Las marcas favoritas ya guardadas se mantienen y continúan filtrando todas las equivalencias.
+
+### Revisión
+
+- La ruta `#marcas` muestra 29 tarjetas de marca con monograma de fondo y estrella accesible (`aria-pressed`); no se descargan ni enlazan logotipos de terceros.
+- Validado en navegador: navegación desde cabecera, las 29 tarjetas y cabecera de estado. A 375 px CSS la cuadrícula pasa a una columna.
+- `npm run check`, `npm run build` y `git diff --check` superados.
+
 ## Corrección de despliegue — 4 de noviembre de 2026
 
 - [x] Identificar que el fallo procede de la dependencia de fnm en el build remoto.
