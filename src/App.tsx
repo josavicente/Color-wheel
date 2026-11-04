@@ -20,6 +20,7 @@ const wheelBands = [
   { id: 'base', lightness: 50, label: 'Medio' },
   { id: 'light', lightness: 76, label: 'Claro' },
 ]
+const PALETTE_MATCH_LIMIT = 8
 
 function paintBrand(paint: PaintCatalogEntry) {
   if (paint.range.startsWith('AK Interactive')) return 'AK Interactive'
@@ -38,10 +39,15 @@ function brandTone(brand: string) {
   return `hsl(${[...brand].reduce((sum, character) => sum + character.charCodeAt(0), 0) % 360} 37% 28%)`
 }
 
-function exportPng(palette: PaletteColor[], title: string, dark: boolean, showHex: boolean) {
+function exportPng(palette: PaletteColor[], matches: PaintCatalogEntry[][], title: string, dark: boolean, showHex: boolean) {
   const width = 1600
-  const height = 1000
   const scale = 2
+  const margin = 72
+  const gap = 28
+  const columns = palette.length === 1 ? 1 : 2
+  const cardWidth = (width - margin * 2 - gap * (columns - 1)) / columns
+  const rowHeights = Array.from({ length: Math.ceil(palette.length / columns) }, (_, row) => Math.max(...palette.slice(row * columns, row * columns + columns).map((_, column) => 170 + (matches[row * columns + column]?.length || 0) * 44)))
+  const height = 220 + rowHeights.reduce((total, rowHeight) => total + rowHeight, 0) + gap * Math.max(0, rowHeights.length - 1) + margin
   const canvas = document.createElement('canvas')
   canvas.width = width * scale
   canvas.height = height * scale
@@ -56,23 +62,37 @@ function exportPng(palette: PaletteColor[], title: string, dark: boolean, showHe
   context.fillText(title || 'Paleta sin título', 72, 100)
   context.font = '500 22px monospace'
   context.fillStyle = dark ? '#B7B3AA' : '#716F67'
-  context.fillText(`${palette.length} colores · ColorWheel`, 74, 142)
-  const gap = 18
-  const margin = 72
-  const swatchWidth = (width - margin * 2 - gap * (palette.length - 1)) / palette.length
-  const swatchHeight = 660
+  context.fillText(`${palette.length} colores · equivalencias de pintura · ColorWheel`, 74, 142)
+  let y = 186
   palette.forEach((color, index) => {
-    const x = margin + index * (swatchWidth + gap)
+    const row = Math.floor(index / columns)
+    const column = index % columns
+    if (column === 0 && index > 0) y += rowHeights[row - 1] + gap
+    const x = margin + column * (cardWidth + gap)
     context.fillStyle = color.hex
-    context.fillRect(x, 204, swatchWidth, swatchHeight)
+    context.fillRect(x, y, cardWidth, 82)
     if (showHex) {
       context.fillStyle = contrastText(color.hex)
-      context.font = '700 21px monospace'
-      context.fillText(color.hex, x + 22, 838)
+      context.font = '700 19px monospace'
+      context.fillText(color.hex, x + 18, y + 53)
     }
     context.fillStyle = ink
-    context.font = '600 21px Georgia, serif'
-    context.fillText(color.name || `Color ${index + 1}`, x, 922)
+    context.font = '600 25px Georgia, serif'
+    context.fillText(color.name || `Color ${index + 1}`, x, y + 118)
+    context.fillStyle = dark ? '#B7B3AA' : '#716F67'
+    context.font = '600 13px monospace'
+    context.fillText('PINTURAS CORRESPONDIENTES', x, y + 148)
+    matches[index]?.forEach((paint, paintIndex) => {
+      const paintY = y + 168 + paintIndex * 44
+      context.fillStyle = paint.hex
+      context.fillRect(x, paintY, 26, 26)
+      context.fillStyle = ink
+      context.font = '600 16px Georgia, serif'
+      context.fillText(paint.name, x + 38, paintY + 13)
+      context.fillStyle = dark ? '#B7B3AA' : '#716F67'
+      context.font = '500 11px monospace'
+      context.fillText(`${paint.range} · ${paint.code || paint.type} · ${paint.hex}`, x + 38, paintY + 29)
+    })
   })
   canvas.toBlob((blob) => {
     if (!blob) return
@@ -135,7 +155,7 @@ function App() {
     .slice(0, 5), [mix, suggestedPaintCatalog])
   const palettePaintMatches = useMemo(() => palette.map((color) => [...suggestedPaintCatalog]
     .sort((left, right) => colorDistance(color.hex, left.hex) - colorDistance(color.hex, right.hex))
-    .slice(0, 3)), [palette, suggestedPaintCatalog])
+    .slice(0, PALETTE_MATCH_LIMIT)), [palette, suggestedPaintCatalog])
   const filteredPaints = useMemo(() => {
     const query = paintSearch.trim().toLocaleLowerCase()
     return paintCatalog.filter((paint) => {
@@ -253,7 +273,7 @@ function App() {
   return <main className="app-shell">
     <header className="site-header">
       <a className="brand" href="#top"><i />ColorWheel</a><p className="eyebrow">Laboratorio de color / 01</p>
-      <div className="header-actions"><button className="text-button" onClick={() => { window.location.hash = page === 'brands' ? '#top' : '#marcas' }}>{page === 'brands' ? '← Estudio' : `Marcas${favoriteBrands.length ? ` · ${favoriteBrands.length}` : ''}`}</button>{page === 'studio' && <><button className="text-button" onClick={undo} disabled={!history.length}>↶ Deshacer</button><button className="text-button" onClick={redo} disabled={!future.length}>Rehacer ↷</button><button className="export-button" onClick={() => setExportOpen(true)} disabled={!palette.length}>Exportar PNG ↗</button></>}</div>
+      <div className="header-actions"><button className="text-button" onClick={() => { window.location.hash = page === 'brands' ? '#top' : '#marcas' }}>{page === 'brands' ? '← Estudio' : `Marcas${favoriteBrands.length ? ` · ${favoriteBrands.length}` : ''}`}</button>{page === 'studio' && <><button className="text-button" onClick={undo} disabled={!history.length}>↶ Deshacer</button><button className="text-button" onClick={redo} disabled={!future.length}>Rehacer ↷</button></>}</div>
     </header>
     {page === 'brands' ? <BrandsPage brands={paintBrands} favorites={favoriteBrands} onToggle={toggleFavoriteBrand} onReturn={() => { window.location.hash = '#top' }} /> : <>
     <section className="intro" id="top"><div><p className="eyebrow">Herramienta de estudio</p><h1>Encuentra un color.<br /><em>Hazlo tuyo.</em></h1></div><p>Una rueda para explorar relaciones, guardar hallazgos y convertirlos en una paleta que puedas llevar contigo.</p></section>
@@ -281,13 +301,13 @@ function App() {
         {tool === 'mix' && <><p className="panel-kicker">Mezcla digital</p><h2>Prueba sin<br /><em>gastar pintura.</em></h2><div className="mix-workbench"><div className="mix-base"><span style={{ background: active }} /><div><b>Color actual</b><small>{active} · 1 parte</small></div></div>{mixColors.map((color, index) => <div className="mix-input" key={color.id}><input type="color" value={color.hex} onChange={(event) => updateMixColor(color.id, { hex: event.target.value.toUpperCase() })} aria-label={`Color de mezcla ${index + 2}`} /><label>Color {index + 2}<input type="text" value={color.hex} maxLength={7} onChange={(event) => /^#?[0-9A-Fa-f]{0,6}$/.test(event.target.value) && updateMixColor(color.id, { hex: event.target.value.startsWith('#') ? event.target.value.toUpperCase() : `#${event.target.value.toUpperCase()}` })} /></label><label className="mix-parts">Partes <input type="range" min="1" max="8" value={color.parts} onChange={(event) => updateMixColor(color.id, { parts: Number(event.target.value) })} /><output>{color.parts}</output></label><button className="remove-mix" onClick={() => setMixColors((colors) => colors.filter((item) => item.id !== color.id))} aria-label={`Quitar color ${index + 2}`}>×</button></div>)}</div><button className="add-mix" onClick={addMixColor}>+ Añadir otro color</button><div className="mix-result"><span>Resultado</span><strong style={{ background: mix, color: contrastText(mix) }}>{mix}</strong></div><PaintMatches paints={closeMixPaints} loading={!paintCatalog.length} onPick={usePaint} label="Equivalencias de pintura" /><p className="help-copy">Cada parte pesa en el promedio de mezcla. Ajusta las partes para probar recetas de hasta seis colores.</p><div className="button-row"><button className="primary-action" onClick={() => add(mix, 'Mezcla')}>+ Añadir mezcla</button><button className="ghost-action" disabled={selected === null || palette[selected]?.locked} onClick={() => replace(mix)}>Sustituir</button></div></>}
       </aside>
     </section>
-    <section className="palette-area" aria-labelledby="palette-title"><div className="palette-heading"><div><p className="eyebrow">Tu colección</p><input id="palette-title" aria-label="Nombre de la paleta" value={title} onChange={(event) => setTitle(event.target.value)} /><p>{palette.length ? `${palette.length} / 12 muestras · se guarda en este dispositivo` : 'Elige un punto en la rueda para empezar'}</p></div><div className="palette-actions"><button className="text-button" disabled={!palette.length} onClick={saveCopy}>Guardar copia</button><button className="text-button" disabled={!palette.length} onClick={() => downloadData(JSON.stringify({ v: 1, title, palette }, null, 2), 'paleta-colorwheel.json', 'application/json')}>JSON</button><button className="text-button" disabled={!palette.length} onClick={() => copy(palette.map((color, index) => `--color-${index + 1}: ${color.hex};`).join('\n'), 'Variables CSS copiadas')}>CSS</button><button className="text-button" disabled={!palette.length} onClick={share}>Compartir</button><button className="text-button danger" disabled={!palette.length} onClick={() => { commit([]); setSelected(null); setNotice('Paleta vaciada; puedes recuperarla con Deshacer.') }}>Vaciar</button></div></div>
+    <section className="palette-area" aria-labelledby="palette-title"><div className="palette-heading"><div><p className="eyebrow">Tu colección</p><input id="palette-title" aria-label="Nombre de la paleta" value={title} onChange={(event) => setTitle(event.target.value)} /><p>{palette.length ? `${palette.length} / 12 muestras · se guarda en este dispositivo` : 'Elige un punto en la rueda para empezar'}</p></div><div className="palette-actions"><button className="export-button palette-export" disabled={!palette.length} onClick={() => setExportOpen(true)}>Exportar PNG ↗</button><button className="text-button" disabled={!palette.length} onClick={saveCopy}>Guardar copia</button><button className="text-button" disabled={!palette.length} onClick={() => downloadData(JSON.stringify({ v: 1, title, palette }, null, 2), 'paleta-colorwheel.json', 'application/json')}>JSON</button><button className="text-button" disabled={!palette.length} onClick={() => copy(palette.map((color, index) => `--color-${index + 1}: ${color.hex};`).join('\n'), 'Variables CSS copiadas')}>CSS</button><button className="text-button" disabled={!palette.length} onClick={share}>Compartir</button><button className="text-button danger" disabled={!palette.length} onClick={() => { commit([]); setSelected(null); setNotice('Paleta vaciada; puedes recuperarla con Deshacer.') }}>Vaciar</button></div></div>
       {palette.length ? <div className="palette-grid">{palette.map((color, index) => <article key={color.id} className={selected === index ? 'palette-card selected' : 'palette-card'} onClick={() => setSelected(index)}><div className="palette-chip" style={{ background: color.hex }}><span>{String(index + 1).padStart(2, '0')}</span><button className="lock-button" aria-label={color.locked ? 'Desbloquear muestra' : 'Bloquear muestra'} onClick={(event) => { event.stopPropagation(); update(index, { locked: !color.locked }) }}>{color.locked ? '●' : '○'}</button></div><div className="palette-card-body"><input className="color-name" value={color.name} onClick={(event) => event.stopPropagation()} onChange={(event) => update(index, { name: event.target.value })} aria-label={`Nombre del color ${index + 1}`} /><button className="hex" onClick={(event) => { event.stopPropagation(); copy(color.hex, 'HEX copiado') }}>{color.hex}</button><div className="card-controls"><input type="color" value={color.hex} disabled={color.locked} onClick={(event) => event.stopPropagation()} onChange={(event) => update(index, { hex: event.target.value.toUpperCase() })} aria-label={`Editar ${color.name}`} /><button disabled={index === 0} onClick={(event) => { event.stopPropagation(); move(index, -1) }}>←</button><button disabled={index === palette.length - 1} onClick={(event) => { event.stopPropagation(); move(index, 1) }}>→</button><button disabled={color.locked} onClick={(event) => { event.stopPropagation(); commit(palette.filter((_, position) => position !== index)); setSelected(null) }}>×</button></div><PaintMatches paints={palettePaintMatches[index]} loading={!paintCatalog.length} onPick={usePaint} label="Pinturas próximas" compact /></div></article>)}</div> : <div className="empty-palette"><span>+</span><p>Tu paleta está abierta.<br />Empieza por el color que te llame.</p><button className="primary-action" onClick={() => add()}>Añadir el color actual</button></div>}
     </section>
     <section className="paint-catalog" aria-labelledby="paint-catalog-title"><div className="catalog-heading"><div><p className="eyebrow">Biblioteca de pintura</p><h2 id="paint-catalog-title">Catálogo de pinturas<br /><em>con códigos HEX.</em></h2><p>{paintCatalog.length ? `${paintCatalog.length.toLocaleString('es-ES')} pinturas · ${paintRanges.length} gamas · actualización ${new Date(paintCatalogUpdatedAt).toLocaleDateString('es-ES')}` : 'Cargando catálogo local de pinturas…'}</p></div></div><section className="favorite-brands" aria-labelledby="favorite-brands-title"><div><p className="eyebrow" id="favorite-brands-title">Tus marcas favoritas</p><p>{favoriteBrands.length ? 'Las equivalencias se ajustan únicamente a estas marcas.' : 'Elige marcas para priorizar todas las equivalencias de pintura.'}</p></div><div className="favorite-brand-controls"><label>Agregar marca<select value="" disabled={!paintCatalog.length} onChange={(event) => addFavoriteBrand(event.target.value)}><option value="">Selecciona una marca</option>{paintBrands.filter((brand) => !favoriteBrands.includes(brand)).map((brand) => <option key={brand} value={brand}>{brand}</option>)}</select></label>{favoriteBrands.length > 0 && <button className="clear-favorites" onClick={() => { setFavoriteBrands([]); setNotice('Las equivalencias vuelven a usar todo el catálogo') }}>Usar todo el catálogo</button>}</div>{favoriteBrands.length > 0 && <div className="favorite-brand-list" aria-label="Marcas favoritas seleccionadas">{favoriteBrands.map((brand) => <button key={brand} onClick={() => setFavoriteBrands((brands) => brands.filter((item) => item !== brand))}>{brand}<span aria-hidden="true">×</span><span className="sr-only">Quitar {brand}</span></button>)}</div>}</section><div className="catalog-filters"><label>Buscar pintura, código, tipo o HEX<input value={paintSearch} disabled={!paintCatalog.length} onChange={(event) => { setPaintSearch(event.target.value); setPaintLimit(30) }} placeholder="Ej. Shade, Squid Orange, 74.211 o #F49444" /></label><label>Gama<select value={paintRange} disabled={!paintCatalog.length} onChange={(event) => { setPaintRange(event.target.value); setPaintLimit(30) }}><option>Todas las gamas</option>{paintRanges.map((range) => <option key={range}>{range}</option>)}</select></label></div><p className="catalog-result-count">{paintCatalog.length ? `${filteredPaints.length.toLocaleString('es-ES')} resultados · pulsa una pintura para llevar su HEX a la rueda.` : 'Preparando resultados…'}</p><div className="paint-grid">{filteredPaints.slice(0, paintLimit).map((paint) => <button className="paint-card" key={paint.id} onClick={() => usePaint(paint)}><i style={{ background: paint.hex }} /><span><b>{paint.name}</b><small>{paint.range}</small></span><em>{paint.hex}</em><small>{paint.code || '—'}</small><mark>{paint.type || 'Sin clasificar'}</mark></button>)}</div>{filteredPaints.length > paintLimit && <button className="show-more" onClick={() => setPaintLimit((limit) => limit + 30)}>Mostrar 30 pinturas más</button>}<p className="catalog-source">Los nombres y marcas pertenecen a sus respectivos propietarios.</p></section>
     {library.length > 0 && <section className="library" aria-label="Biblioteca de paletas"><p className="eyebrow">Biblioteca local · {library.length}</p><div>{library.map((entry) => <article key={entry.id}><button onClick={() => { commit(entry.palette); setTitle(entry.title); setSelected(null); setNotice('Paleta recuperada') }}><strong>{entry.title}</strong><span>{entry.palette.map((color) => color.hex).join(' · ')}</span></button><button className="remove-library" aria-label={`Eliminar ${entry.title}`} onClick={() => setLibrary((items) => items.filter((item) => item.id !== entry.id))}>×</button></article>)}</div></section>}
     {notice && <div className="toast" role="status">{notice}</div>}
-    {exportOpen && <div className="modal-backdrop" onMouseDown={() => setExportOpen(false)}><section className="export-modal" role="dialog" aria-modal="true" aria-labelledby="export-title" onMouseDown={(event) => event.stopPropagation()}><button className="modal-close" onClick={() => setExportOpen(false)} aria-label="Cerrar">×</button><p className="eyebrow">Salida de estudio</p><h2 id="export-title">Tu paleta, <em>lista para salir.</em></h2><div className={exportDark ? 'export-preview dark' : 'export-preview'}>{palette.map((color) => <div key={color.id} style={{ background: color.hex, color: contrastText(color.hex) }}>{showHex && color.hex}</div>)}</div><div className="export-options"><fieldset><legend>Fondo</legend><button className={!exportDark ? 'selected' : ''} onClick={() => setExportDark(false)}>Claro</button><button className={exportDark ? 'selected' : ''} onClick={() => setExportDark(true)}>Oscuro</button></fieldset><label className="checkbox-label"><input type="checkbox" checked={showHex} onChange={(event) => setShowHex(event.target.checked)} /> Incluir HEX</label></div><div className="modal-footer"><p>PNG a 2× · 1600 × 1000 px</p><button className="primary-action" onClick={() => exportPng(palette, title, exportDark, showHex)}>Descargar PNG ↗</button></div></section></div>}
+    {exportOpen && <div className="modal-backdrop" onMouseDown={() => setExportOpen(false)}><section className="export-modal" role="dialog" aria-modal="true" aria-labelledby="export-title" onMouseDown={(event) => event.stopPropagation()}><button className="modal-close" onClick={() => setExportOpen(false)} aria-label="Cerrar">×</button><p className="eyebrow">Salida de estudio</p><h2 id="export-title">Tu paleta, <em>lista para salir.</em></h2><p className="export-equivalents-note">Incluye hasta {PALETTE_MATCH_LIMIT} equivalencias de pintura por muestra.</p><div className={exportDark ? 'export-preview dark' : 'export-preview'}>{palette.map((color) => <div key={color.id} style={{ background: color.hex, color: contrastText(color.hex) }}>{showHex && color.hex}</div>)}</div><div className="export-options"><fieldset><legend>Fondo</legend><button className={!exportDark ? 'selected' : ''} onClick={() => setExportDark(false)}>Claro</button><button className={exportDark ? 'selected' : ''} onClick={() => setExportDark(true)}>Oscuro</button></fieldset><label className="checkbox-label"><input type="checkbox" checked={showHex} onChange={(event) => setShowHex(event.target.checked)} /> Incluir HEX</label></div><div className="modal-footer"><p>PNG a 2× · altura según equivalencias</p><button className="primary-action" onClick={() => exportPng(palette, palettePaintMatches, title, exportDark, showHex)}>Descargar PNG ↗</button></div></section></div>}
     </>}
   </main>
 }

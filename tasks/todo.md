@@ -76,6 +76,24 @@ Los hitos pendientes están en [tasks-color-wheel.md](tasks-color-wheel.md). La 
 - Verificado que una equivalencia actualiza la rueda con su HEX exacto (`#9F9E67`).
 - `npm run check`, `npm run build` y `git diff --check` superados.
 
+## Iteración — exportación con equivalencias
+
+- [x] Mover la acción de exportar PNG desde la cabecera al Estudio de color.
+- [x] Ampliar las coincidencias de cada muestra más allá de tres y conservar su selección de marcas favoritas.
+- [x] Incluir las pinturas correspondientes, marca, gama, referencia y HEX en el PNG exportado.
+- [x] Verificar composición con una paleta completa, móvil, build y publicación.
+
+### Diseño y aceptación
+
+- El PNG debe crecer verticalmente para hacer sitio a las equivalencias sin comprimir las muestras de la paleta.
+- Cada color exportado muestra hasta ocho correspondencias más cercanas; en la interfaz se muestra la misma cantidad.
+
+### Revisión
+
+- Verificada en navegador una paleta de tres muestras: la cabecera no ofrece exportación, el Estudio sí y cada ficha muestra ocho equivalencias.
+- Confirmada la descarga de un PNG con el aviso de equivalencias y el layout sin desbordamiento horizontal a 375 px.
+- `npm run check`, `npm run build` y `git diff --check` superados; comprobada también la ausencia de la referencia externa prohibida fuera de los assets.
+
 ## Iteración — página de marcas favoritas
 
 - [x] Trasladar la selección de marcas desde el catálogo a una página dedicada accesible desde la cabecera.

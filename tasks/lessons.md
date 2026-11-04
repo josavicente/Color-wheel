@@ -53,3 +53,9 @@ Regla: fijar una versión LTS soportada por el proveedor en `engines`, y ejecuta
 La selección en línea de marcas resolvía el filtro, pero el usuario espera poder recorrer y reconocer visualmente las marcas antes de marcarlas como favoritas.
 
 Regla: cuando una preferencia implique descubrir, comparar o gestionar una colección, darle una página o vista dedicada con estado claro y controles directos; no reducirla a un selector auxiliar dentro de otra tarea.
+
+## 2026-11-04 — La exportación pertenece al lugar donde se compone la paleta
+
+El botón global de PNG estaba disponible, pero separaba la salida del conjunto de colores y equivalencias que el usuario está preparando.
+
+Regla: colocar las acciones de entrega junto al artefacto que producen y conservar en la exportación el contexto práctico necesario para utilizarlo después.
