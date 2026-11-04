@@ -20,7 +20,7 @@ Para comprobar y crear la compilación de producción:
 
 La página pública se optimiza para la intención “rueda de color y paletas para miniaturas”. Incluye metadatos indexables, datos estructurados de aplicación web y un canonical que ignora los hashes de interfaz.
 
-Configura la URL pública definitiva en el entorno de despliegue antes de compilar. El build generará entonces `robots.txt` y un sitemap con esa URL; no se crea ningún sitemap si falta el dominio, para no publicar enlaces de ejemplo ni de previsualización.
+La URL pública actual de Vercel está versionada en `.env.production`. El build genera `robots.txt` y sitemap con esa URL. Si se conecta un dominio propio, define `SITE_URL` o `VITE_SITE_URL` en el entorno de despliegue: esa variable tiene prioridad sobre la configuración versionada.
 
     SITE_URL=https://tu-dominio.example
 

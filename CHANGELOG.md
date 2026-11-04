@@ -14,6 +14,7 @@
 
 ## 2026-11-04
 
+- Configurada la URL pública de Vercel en canonical, metadatos sociales, schema, sitemap y `robots.txt`; el generador SEO usa el runtime moderno del proyecto.
 - Unificado el icono del navegador con el distintivo cromático de la cabecera y versionada su URL para renovar la caché del favicon.
 - Establecida la base SEO: metadatos de búsqueda y sociales, schema de aplicación web, canonical sin hashes y generación segura de `robots.txt`/sitemap desde `SITE_URL`.
 - Añadida la herramienta Foto: analiza la imagen localmente, permite extraer entre 4 y 12 colores predominantes y crear o ampliar una paleta con sus equivalencias de pintura.

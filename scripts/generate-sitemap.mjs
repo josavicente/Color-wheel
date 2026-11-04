@@ -1,6 +1,8 @@
 import { mkdir, writeFile } from 'node:fs/promises'
+import { loadEnv } from 'vite'
 
-const rawSiteUrl = process.env.SITE_URL || process.env.VITE_SITE_URL
+const fileEnv = loadEnv('production', process.cwd(), '')
+const rawSiteUrl = process.env.SITE_URL || process.env.VITE_SITE_URL || fileEnv.SITE_URL || fileEnv.VITE_SITE_URL
 const output = 'dist'
 const robots = ['User-agent: *', 'Allow: /']
 
