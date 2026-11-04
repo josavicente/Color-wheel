@@ -14,6 +14,7 @@
 
 ## 2026-11-04
 
+- Establecida la base SEO: metadatos de búsqueda y sociales, schema de aplicación web, canonical sin hashes y generación segura de `robots.txt`/sitemap desde `SITE_URL`.
 - Añadida la herramienta Foto: analiza la imagen localmente, permite extraer entre 4 y 12 colores predominantes y crear o ampliar una paleta con sus equivalencias de pintura.
 - La exportación PNG se traslada al Estudio de color e incorpora hasta ocho equivalencias por muestra, con nombre, marca, gama, referencia o tipo y HEX.
 - Configurado el build de producción para Node 24.x y eliminado el requisito de fnm en runtimes compatibles.

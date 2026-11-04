@@ -194,6 +194,15 @@ function App() {
     const timer = window.setTimeout(() => setNotice(''), 2600)
     return () => window.clearTimeout(timer)
   }, [notice])
+  useEffect(() => {
+    const href = new URL(window.location.pathname, window.location.origin).href
+    let canonical = document.head.querySelector<HTMLLinkElement>('link[rel="canonical"]')
+    if (!canonical) { canonical = document.createElement('link'); canonical.rel = 'canonical'; document.head.append(canonical) }
+    canonical.href = href
+    let ogUrl = document.head.querySelector<HTMLMetaElement>('meta[property="og:url"]')
+    if (!ogUrl) { ogUrl = document.createElement('meta'); ogUrl.setAttribute('property', 'og:url'); document.head.append(ogUrl) }
+    ogUrl.content = href
+  }, [])
   useEffect(() => () => { if (imagePreviewUrl.current) URL.revokeObjectURL(imagePreviewUrl.current) }, [])
   useEffect(() => {
     if (!imageData.current) return
@@ -349,7 +358,7 @@ function App() {
       <div className="header-actions"><button className="text-button" onClick={() => { window.location.hash = page === 'brands' ? '#top' : '#marcas' }}>{page === 'brands' ? '← Estudio' : `Marcas${favoriteBrands.length ? ` · ${favoriteBrands.length}` : ''}`}</button>{page === 'studio' && <><button className="text-button" onClick={undo} disabled={!history.length}>↶ Deshacer</button><button className="text-button" onClick={redo} disabled={!future.length}>Rehacer ↷</button></>}</div>
     </header>
     {page === 'brands' ? <BrandsPage brands={paintBrands} favorites={favoriteBrands} onToggle={toggleFavoriteBrand} onReturn={() => { window.location.hash = '#top' }} /> : <>
-    <section className="intro" id="top"><div><p className="eyebrow">Herramienta de estudio</p><h1>Encuentra un color.<br /><em>Hazlo tuyo.</em></h1></div><p>Una rueda para explorar relaciones, guardar hallazgos y convertirlos en una paleta que puedas llevar contigo.</p></section>
+    <section className="intro" id="top"><div><p className="eyebrow">Rueda de color para miniaturas</p><h1>Encuentra un color.<br /><em>Hazlo tuyo.</em></h1></div><p>Una rueda de color y generador de paletas para explorar relaciones, guardar hallazgos y llevar tus pinturas de miniaturas contigo.</p></section>
     <nav className="tool-nav" aria-label="Herramientas de color">
       {([['explore', '01', 'Explorar'], ['harmony', '02', 'Armonías'], ['mix', '03', 'Mezclar'], ['image', '04', 'Foto']] as [Tool, string, string][]).map(([id, number, label]) => <button key={id} className={tool === id ? 'tool-tab active' : 'tool-tab'} onClick={() => setTool(id)}><span>{number}</span>{label}</button>)}
     </nav>
