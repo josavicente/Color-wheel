@@ -15,6 +15,17 @@ Fecha: 3 de noviembre de 2026. Rama: `codex/plan-color-wheel`.
 
 Los hitos pendientes están en [tasks-color-wheel.md](tasks-color-wheel.md). La primera entrega funcional ya implementa el recorrido de creación y exportación; quedan funciones y verificaciones de las fases 4 a 6.
 
+## Configuración — URL pública de Vercel
+
+- [x] Fijar la URL pública proporcionada como canonical, URL social y URL del schema durante el build de producción.
+- [x] Usar esa misma configuración al generar sitemap y `robots.txt`, manteniendo una variable de entorno con prioridad para un futuro dominio propio.
+- [x] Verificar los artefactos de producción y publicar en `main`.
+
+### Revisión
+
+- El build produce canonical, `og:url`, schema, sitemap y `robots.txt` con `https://color-wheel-seven-kohl.vercel.app/`.
+- `npm run check`, `npm run build` y `git diff --check` superados con el mismo runtime moderno para Vite y el generador SEO.
+
 ## Corrección — icono de navegador
 
 - [x] Unificar el distintivo de cabecera y el favicon en un único activo vectorial.

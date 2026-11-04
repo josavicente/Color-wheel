@@ -195,7 +195,8 @@ function App() {
     return () => window.clearTimeout(timer)
   }, [notice])
   useEffect(() => {
-    const href = new URL(window.location.pathname, window.location.origin).href
+    const configuredSiteUrl = import.meta.env.VITE_SITE_URL
+    const href = configuredSiteUrl ? new URL(window.location.pathname, configuredSiteUrl).href : new URL(window.location.pathname, window.location.origin).href
     let canonical = document.head.querySelector<HTMLLinkElement>('link[rel="canonical"]')
     if (!canonical) { canonical = document.createElement('link'); canonical.rel = 'canonical'; document.head.append(canonical) }
     canonical.href = href
