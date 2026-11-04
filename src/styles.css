@@ -26,3 +26,6 @@
 @media (max-width: 1000px) { .brands-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
 @media (max-width: 860px) { .header-actions .text-button:first-child { display: block; }.brands-page { padding-top: 42px; }.brands-hero { grid-template-columns: 1fr; gap: 26px; }.brands-hero aside { min-height: 160px; }.brands-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 450px) { .brands-hero { padding-bottom: 34px; }.brands-hero h1 { font-size: 64px; }.brands-hero aside { padding: 19px; min-height: 130px; }.brands-hero aside span { font-size: 60px; }.brands-grid { grid-template-columns: 1fr; gap: 8px; padding-top: 24px; }.brand-card { min-height: 144px; }.brand-watermark { font-size: 98px; } }
+
+.palette-export { white-space: nowrap; }.export-equivalents-note { margin: 12px 0 18px; color: #62695f; font-size: 10px; line-height: 1.5; }
+@media (max-width: 860px) { .palette-actions { justify-content: flex-start; }.palette-export { order: -1; } }
