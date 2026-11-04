@@ -15,6 +15,19 @@ Fecha: 3 de noviembre de 2026. Rama: `codex/plan-color-wheel`.
 
 Los hitos pendientes están en [tasks-color-wheel.md](tasks-color-wheel.md). La primera entrega funcional ya implementa el recorrido de creación y exportación; quedan funciones y verificaciones de las fases 4 a 6.
 
+## Corrección — selección de rueda
+
+- [x] Hacer coincidir el tono puro de la rueda con el color seleccionado al pulsar.
+- [x] Posicionar el marcador en la coordenada angular real de la rueda, incluida la vista ampliada.
+- [x] Ampliar la rueda a cinco intensidades visibles, desde muy profundo hasta muy claro.
+- [x] Verificar tonos en RYB/RGB, interacción, móvil, tipos, build y publicación.
+
+### Revisión
+
+- Al pulsar la rueda normal, se selecciona el color puro dibujado: croma al 100 % y luz al 50 %. El anillo RYB interpola en sRGB, igual que el cálculo, y RGB lo hace en HSL para seguir su modelo de matiz.
+- El marcador usa coordenadas porcentuales reales de la rueda; en la versión ampliada cambia de radio junto con los cinco niveles de luz seleccionables (18 %, 34 %, 50 %, 68 % y 84 %).
+- `npm run check`, `npm run build` y `git diff --check` superados. La automatización visual local no pudo reclamar la pestaña porque el equipo está bloqueado; el marcado y la compilación se verificaron estáticamente.
+
 ## Iteración — armonías ampliadas
 
 - [x] Añadir complementaria dividida, tétrada, cuadrada y monocromática al selector de armonías.
