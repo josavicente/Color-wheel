@@ -47,3 +47,9 @@ Regla: presentar esta funcionalidad como un catálogo propio de pinturas; no mos
 El script de build delegaba siempre en fnm y exigía una versión que el entorno de despliegue no proporciona, aunque el runtime gestionado del proveedor fuera compatible con la aplicación.
 
 Regla: fijar una versión LTS soportada por el proveedor en `engines`, y ejecutar directamente cuando el runtime ya alcanza el mínimo. Mantener el gestor local solo como respaldo para terminales de desarrollo obsoletas.
+
+## 2026-11-04 — Las preferencias deben tener una superficie dedicada cuando se convierten en exploración
+
+La selección en línea de marcas resolvía el filtro, pero el usuario espera poder recorrer y reconocer visualmente las marcas antes de marcarlas como favoritas.
+
+Regla: cuando una preferencia implique descubrir, comparar o gestionar una colección, darle una página o vista dedicada con estado claro y controles directos; no reducirla a un selector auxiliar dentro de otra tarea.
