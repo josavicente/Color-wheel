@@ -354,7 +354,7 @@ function App() {
 
   return <main className="app-shell">
     <header className="site-header">
-      <a className="brand" href="#top"><i />ColorWheel</a><p className="eyebrow">Laboratorio de color / 01</p>
+      <a className="brand" href="#top"><img className="brand-mark" src="/colorwheel-mark.svg?v=2" alt="" />ColorWheel</a><p className="eyebrow">Laboratorio de color / 01</p>
       <div className="header-actions"><button className="text-button" onClick={() => { window.location.hash = page === 'brands' ? '#top' : '#marcas' }}>{page === 'brands' ? '← Estudio' : `Marcas${favoriteBrands.length ? ` · ${favoriteBrands.length}` : ''}`}</button>{page === 'studio' && <><button className="text-button" onClick={undo} disabled={!history.length}>↶ Deshacer</button><button className="text-button" onClick={redo} disabled={!future.length}>Rehacer ↷</button></>}</div>
     </header>
     {page === 'brands' ? <BrandsPage brands={paintBrands} favorites={favoriteBrands} onToggle={toggleFavoriteBrand} onReturn={() => { window.location.hash = '#top' }} /> : <>
