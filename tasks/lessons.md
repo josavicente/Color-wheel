@@ -77,3 +77,9 @@ Regla: separar las superficies de descubrimiento extensas en vistas dedicadas, m
 La rueda dibujaba tonos puros pero retenía los ajustes previos al pulsarla, mientras que el marcador solo se desplazaba el tamaño de su propio círculo desde el centro.
 
 Regla: cuando una superficie visual representa el valor directo que se va a seleccionar, restablecer los ajustes necesarios para igualarlo y calcular cualquier indicador con coordenadas reales de esa superficie.
+
+## 2026-11-04 — El marcador debe reflejar las dos coordenadas de la selección
+
+La primera corrección trasladó el marcador según el ángulo, pero seguía usando un radio fijo; por eso no podía representar un clic junto al borde.
+
+Regla: en un control radial, conservar el vector completo del puntero (ángulo y distancia al centro) y limitarlo solo por el límite visual del control.

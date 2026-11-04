@@ -14,6 +14,7 @@
 
 ## 2026-11-04
 
+- El marcador de la rueda conserva ahora la distancia real del clic al centro, por lo que puede marcar selecciones junto al borde sin quedar fijado a un radio único.
 - Corregida la selección directa de la rueda: RYB y RGB calculan el mismo tono que muestran, y el marcador se coloca en el anillo y ángulo seleccionados.
 - La rueda ampliada muestra ahora cinco intensidades claramente diferenciadas, desde muy profundo hasta muy claro.
 - Ampliadas las armonías con complementaria dividida, tétrada, cuadrada y monocromática; la acción de añadir relación completa incorpora todas las muestras posibles de una vez.

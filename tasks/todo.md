@@ -28,6 +28,18 @@ Los hitos pendientes están en [tasks-color-wheel.md](tasks-color-wheel.md). La 
 - El marcador usa coordenadas porcentuales reales de la rueda; en la versión ampliada cambia de radio junto con los cinco niveles de luz seleccionables (18 %, 34 %, 50 %, 68 % y 84 %).
 - `npm run check`, `npm run build` y `git diff --check` superados. La automatización visual local no pudo reclamar la pestaña porque el equipo está bloqueado; el marcado y la compilación se verificaron estáticamente.
 
+## Corrección — posición radial del marcador
+
+- [x] Conservar el radio real del puntero, no solo su ángulo, al seleccionar un tono.
+- [x] Limitar el marcador al borde útil sin impedir una selección junto al perímetro.
+- [x] Comprobar la interacción normal y ampliada, tipos, build y publicación.
+
+### Revisión
+
+- Cada pulsación guarda su vector desde el centro: el matiz conserva su ángulo y el marcador, su distancia radial. El límite de 45,5 % coloca el borde del círculo indicador contra el perímetro coloreado, sin que se recorte.
+- El mismo cálculo se usa en los anillos de la rueda ampliada; al arrastrar, el indicador sigue exactamente al puntero dentro del anillo elegido.
+- `npm run check`, `npm run build` y `git diff --check` superados.
+
 ## Iteración — armonías ampliadas
 
 - [x] Añadir complementaria dividida, tétrada, cuadrada y monocromática al selector de armonías.
