@@ -5,7 +5,7 @@ import { extractImagePalette } from './image-palette'
 
 type Tool = 'explore' | 'harmony' | 'mix' | 'image'
 type WheelMode = 'ryb' | 'rgb'
-type Page = 'studio' | 'brands'
+type Page = 'studio' | 'brands' | 'catalog'
 type SavedPalette = { id: string; title: string; palette: PaletteColor[] }
 type MixColor = { id: string; hex: string; parts: number }
 
@@ -115,7 +115,7 @@ function App() {
   const [title, setTitle] = useState(saved.title || 'Estudio de color')
   const [library, setLibrary] = useState<SavedPalette[]>(saved.library || [])
   const [favoriteBrands, setFavoriteBrands] = useState<string[]>(Array.isArray(saved.favoriteBrands) ? saved.favoriteBrands : [])
-  const [page, setPage] = useState<Page>(() => window.location.hash === '#marcas' ? 'brands' : 'studio')
+  const [page, setPage] = useState<Page>(() => window.location.hash === '#pinturas' ? 'catalog' : window.location.hash === '#marcas' ? 'brands' : 'studio')
   const [tool, setTool] = useState<Tool>('explore')
   const [mode, setMode] = useState<WheelMode>('ryb')
   const [hue, setHue] = useState(210)
@@ -178,7 +178,7 @@ function App() {
   }, [paintCatalog, paintRange, paintSearch])
   useEffect(() => { localStorage.setItem(STORAGE_KEY, JSON.stringify({ palette, title, library, favoriteBrands })) }, [favoriteBrands, palette, title, library])
   useEffect(() => {
-    const syncPage = () => setPage(window.location.hash === '#marcas' ? 'brands' : 'studio')
+    const syncPage = () => setPage(window.location.hash === '#pinturas' ? 'catalog' : window.location.hash === '#marcas' ? 'brands' : 'studio')
     window.addEventListener('hashchange', syncPage)
     return () => window.removeEventListener('hashchange', syncPage)
   }, [])
@@ -356,9 +356,9 @@ function App() {
   return <main className="app-shell">
     <header className="site-header">
       <a className="brand" href="#top"><img className="brand-mark" src="/colorwheel-mark.svg?v=2" alt="" />ColorWheel</a><p className="eyebrow">Laboratorio de color / 01</p>
-      <div className="header-actions"><button className="text-button" onClick={() => { window.location.hash = page === 'brands' ? '#top' : '#marcas' }}>{page === 'brands' ? '← Estudio' : `Marcas${favoriteBrands.length ? ` · ${favoriteBrands.length}` : ''}`}</button>{page === 'studio' && <><button className="text-button" onClick={undo} disabled={!history.length}>↶ Deshacer</button><button className="text-button" onClick={redo} disabled={!future.length}>Rehacer ↷</button></>}</div>
+      <div className="header-actions">{page === 'studio' ? <><button className="text-button header-nav" onClick={() => { window.location.hash = '#pinturas' }}>Pinturas</button><button className="text-button header-nav" onClick={() => { window.location.hash = '#marcas' }}>Marcas{favoriteBrands.length ? ` · ${favoriteBrands.length}` : ''}</button><button className="text-button" onClick={undo} disabled={!history.length}>↶ Deshacer</button><button className="text-button" onClick={redo} disabled={!future.length}>Rehacer ↷</button></> : <button className="text-button header-nav" onClick={() => { window.location.hash = '#top' }}>← Estudio</button>}</div>
     </header>
-    {page === 'brands' ? <BrandsPage brands={paintBrands} favorites={favoriteBrands} onToggle={toggleFavoriteBrand} onReturn={() => { window.location.hash = '#top' }} /> : <>
+    {page === 'brands' ? <BrandsPage brands={paintBrands} favorites={favoriteBrands} onToggle={toggleFavoriteBrand} onReturn={() => { window.location.hash = '#top' }} /> : page === 'catalog' ? <CatalogPage paints={filteredPaints} ranges={paintRanges} catalogSize={paintCatalog.length} updatedAt={paintCatalogUpdatedAt} search={paintSearch} range={paintRange} limit={paintLimit} onSearch={(value) => { setPaintSearch(value); setPaintLimit(30) }} onRange={(value) => { setPaintRange(value); setPaintLimit(30) }} onMore={() => setPaintLimit((limit) => limit + 30)} onPick={(paint) => { usePaint(paint); window.location.hash = '#top' }} onReturn={() => { window.location.hash = '#top' }} /> : <>
     <section className="intro" id="top"><div><p className="eyebrow">Rueda de color para miniaturas</p><h1>Encuentra un color.<br /><em>Hazlo tuyo.</em></h1></div><p>Una rueda de color y generador de paletas para explorar relaciones, guardar hallazgos y llevar tus pinturas de miniaturas contigo.</p></section>
     <nav className="tool-nav" aria-label="Herramientas de color">
       {([['explore', '01', 'Explorar'], ['harmony', '02', 'Armonías'], ['mix', '03', 'Mezclar'], ['image', '04', 'Foto']] as [Tool, string, string][]).map(([id, number, label]) => <button key={id} className={tool === id ? 'tool-tab active' : 'tool-tab'} onClick={() => setTool(id)}><span>{number}</span>{label}</button>)}
@@ -403,6 +403,10 @@ function Control({ label, id, value, max, min = 0, suffix, onChange }: { label: 
 
 function PaintMatches({ paints, loading, onPick, label = 'Coincidencias en pinturas', compact = false }: { paints: PaintCatalogEntry[]; loading: boolean; onPick: (paint: PaintCatalogEntry) => void; label?: string; compact?: boolean }) {
   return <div className={compact ? 'paint-matches compact' : 'paint-matches'}><div><p>{label}</p><span>{loading ? 'cargando catálogo…' : `${paints.length} más cercanas`}</span></div>{paints.map((paint) => <button key={paint.id} onClick={(event) => { event.stopPropagation(); onPick(paint) }}><i style={{ background: paint.hex }} /><span><b>{paint.name}</b><small>{paint.range} · {paint.code || paint.type}</small></span><em>{paint.hex}</em></button>)}</div>
+}
+
+function CatalogPage({ paints, ranges, catalogSize, updatedAt, search, range, limit, onSearch, onRange, onMore, onPick, onReturn }: { paints: PaintCatalogEntry[]; ranges: string[]; catalogSize: number; updatedAt: string; search: string; range: string; limit: number; onSearch: (value: string) => void; onRange: (value: string) => void; onMore: () => void; onPick: (paint: PaintCatalogEntry) => void; onReturn: () => void }) {
+  return <section className="catalog-page" aria-labelledby="paint-catalog-title"><div className="catalog-hero"><div><p className="eyebrow">Biblioteca de pintura</p><h1 id="paint-catalog-title">Encuentra la<br /><em>pintura precisa.</em></h1><p>{catalogSize ? `${catalogSize.toLocaleString('es-ES')} pinturas · ${ranges.length} gamas · actualización ${new Date(updatedAt).toLocaleDateString('es-ES')}` : 'Cargando catálogo local de pinturas…'}</p></div><aside><span>{catalogSize ? catalogSize.toLocaleString('es-ES') : '…'}</span><p>colores para explorar</p><button className="primary-action" onClick={onReturn}>← Volver al estudio</button></aside></div><div className="catalog-filters"><label>Buscar pintura, código, tipo o HEX<input value={search} disabled={!catalogSize} onChange={(event) => onSearch(event.target.value)} placeholder="Ej. Shade, Squid Orange, 74.211 o #F49444" /></label><label>Gama<select value={range} disabled={!catalogSize} onChange={(event) => onRange(event.target.value)}><option>Todas las gamas</option>{ranges.map((item) => <option key={item}>{item}</option>)}</select></label></div><p className="catalog-result-count">{catalogSize ? `${paints.length.toLocaleString('es-ES')} resultados · pulsa una pintura para llevar su HEX a la rueda.` : 'Preparando resultados…'}</p><div className="paint-grid">{paints.slice(0, limit).map((paint) => <button className="paint-card" key={paint.id} onClick={() => onPick(paint)}><i style={{ background: paint.hex }} /><span><b>{paint.name}</b><small>{paint.range}</small></span><em>{paint.hex}</em><small>{paint.code || '—'}</small><mark>{paint.type || 'Sin clasificar'}</mark></button>)}</div>{paints.length > limit && <button className="show-more" onClick={onMore}>Mostrar 30 pinturas más</button>}<p className="catalog-source">Los nombres y marcas pertenecen a sus respectivos propietarios.</p></section>
 }
 
 function ImagePaletteWorkspace({ preview, imageName, colors, count, status, fileInput, onFile, onCount, onUseColor, onCreate, onAdd, canAdd }: { preview: string; imageName: string; colors: string[]; count: number; status: string; fileInput: RefObject<HTMLInputElement | null>; onFile: (file?: File) => void; onCount: (count: number) => void; onUseColor: (hex: string) => void; onCreate: () => void; onAdd: () => void; canAdd: boolean }) {

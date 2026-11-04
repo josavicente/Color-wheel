@@ -15,6 +15,18 @@ Fecha: 3 de noviembre de 2026. Rama: `codex/plan-color-wheel`.
 
 Los hitos pendientes están en [tasks-color-wheel.md](tasks-color-wheel.md). La primera entrega funcional ya implementa el recorrido de creación y exportación; quedan funciones y verificaciones de las fases 4 a 6.
 
+## Corrección — catálogo de pinturas independiente
+
+- [x] Trasladar el catálogo desde el final del Estudio a una vista dedicada con URL de hash propia.
+- [x] Mantener filtros, tipos, búsqueda, selección de pintura y retorno directo al Estudio.
+- [x] Adaptar la navegación y la vista móvil; comprobar tipos, build y publicación.
+
+### Revisión
+
+- La ruta `#pinturas` renderiza una página editorial dedicada con búsqueda, selector de gama, tipos y las fichas del catálogo; el Estudio ya no muestra el catálogo al final.
+- Al elegir una ficha, su HEX se aplica con la misma ruta de selección existente y la aplicación vuelve a `#top`.
+- `npm run check`, `npm run build` y `git diff --check` superados. La automatización de navegador no pudo reclamar la pestaña local durante esta revisión.
+
 ## Configuración — URL pública de Vercel
 
 - [x] Fijar la URL pública proporcionada como canonical, URL social y URL del schema durante el build de producción.
