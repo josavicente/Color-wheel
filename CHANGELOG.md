@@ -14,6 +14,8 @@
 
 ## 2026-11-04
 
+- Corregida la selección directa de la rueda: RYB y RGB calculan el mismo tono que muestran, y el marcador se coloca en el anillo y ángulo seleccionados.
+- La rueda ampliada muestra ahora cinco intensidades claramente diferenciadas, desde muy profundo hasta muy claro.
 - Ampliadas las armonías con complementaria dividida, tétrada, cuadrada y monocromática; la acción de añadir relación completa incorpora todas las muestras posibles de una vez.
 - El catálogo de pinturas se traslada a una vista independiente, accesible desde la cabecera, con filtros y retorno directo al Estudio al elegir un color.
 - Configurada la URL pública de Vercel en canonical, metadatos sociales, schema, sitemap y `robots.txt`; el generador SEO usa el runtime moderno del proyecto.

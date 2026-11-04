@@ -71,3 +71,9 @@ Regla: servir el favicon y la marca visible desde el mismo activo versionado; as
 El catálogo completo aporta valor cuando se busca una pintura concreta, pero situado tras el Estudio obliga a atravesar el recorrido de creación para llegar a una tarea de consulta distinta.
 
 Regla: separar las superficies de descubrimiento extensas en vistas dedicadas, manteniendo un acceso directo desde la navegación y un retorno claro al contexto creativo.
+
+## 2026-11-04 — El selector visual debe coincidir con el color y marcador que presenta
+
+La rueda dibujaba tonos puros pero retenía los ajustes previos al pulsarla, mientras que el marcador solo se desplazaba el tamaño de su propio círculo desde el centro.
+
+Regla: cuando una superficie visual representa el valor directo que se va a seleccionar, restablecer los ajustes necesarios para igualarlo y calcular cualquier indicador con coordenadas reales de esa superficie.

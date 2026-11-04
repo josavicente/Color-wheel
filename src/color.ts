@@ -113,6 +113,7 @@ export function wheelColor(hue: number, mode: 'ryb' | 'rgb', saturation: number,
   const pure = mode === 'rgb'
     ? hslToHex(hue, 100, 50)
     : mixHex(ryb[Math.floor(normalizeHue(hue) / 30)], ryb[Math.floor(normalizeHue(hue) / 30) + 1], normalizeHue(hue) % 30 / 30)
+  if (saturation === 100 && lightness === 50) return pure.toUpperCase()
   const hsl = hexToHsl(pure)
   return hslToHex(hsl.h, hsl.s * saturation / 100, lightness)
 }
