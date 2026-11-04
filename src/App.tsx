@@ -24,6 +24,7 @@ const wheelBands = [
   { id: 'light', lightness: 68, label: 'Claro' },
   { id: 'pale', lightness: 84, label: 'Muy claro' },
 ]
+const MARKER_EDGE_RADIUS = 45.5
 const harmonyOptions: Harmony[] = ['Complementaria', 'Complementaria dividida', 'Tríada', 'Tétrada', 'Cuadrada', 'Análoga', 'Monocromática']
 const harmonyDefinitions: Record<Harmony, Array<{ hue: number; lightnessOffset?: number; saturationScale?: number }>> = {
   Complementaria: [{ hue: 0 }, { hue: 180 }],
@@ -142,6 +143,7 @@ function App() {
   const [exportDark, setExportDark] = useState(false)
   const [showHex, setShowHex] = useState(true)
   const [wheelExpanded, setWheelExpanded] = useState(false)
+  const [markerRadius, setMarkerRadius] = useState(42)
   const [mixColors, setMixColors] = useState<MixColor[]>([{ id: crypto.randomUUID(), hex: '#F6B328', parts: 1 }])
   const [paintSearch, setPaintSearch] = useState('')
   const [paintRange, setPaintRange] = useState('Todas las gamas')
@@ -163,9 +165,6 @@ function App() {
   const [imageStatus, setImageStatus] = useState('Elige una foto para empezar.')
   const active = useMemo(() => exactHex ?? wheelColor(hue, mode, saturation, lightness), [exactHex, hue, mode, saturation, lightness])
   const markerAngle = (hue - 90) * Math.PI / 180
-  const markerRadius = wheelExpanded
-    ? lightness <= 26 ? 45 : lightness <= 42 ? 36 : lightness <= 59 ? 27 : lightness <= 76 ? 18 : 10
-    : 42
   const markerPosition = { left: `${50 + Math.cos(markerAngle) * markerRadius}%`, top: `${50 + Math.sin(markerAngle) * markerRadius}%` }
   const mix = useMemo(() => mixManyHex([{ hex: active, weight: 1 }, ...mixColors.map((color) => ({ hex: color.hex, weight: color.parts }))]), [active, mixColors])
   const harmonyColors = useMemo(() => harmonyDefinitions[harmony].map((definition) => wheelColor(hue + definition.hue, mode, Math.max(0, Math.min(100, saturation * (definition.saturationScale ?? 1))), Math.max(8, Math.min(92, lightness + (definition.lightnessOffset ?? 0))))), [harmony, hue, mode, saturation, lightness])
@@ -255,8 +254,11 @@ function App() {
   const pick = (clientX: number, clientY: number, nextLightness?: number) => {
     const box = wheel.current?.getBoundingClientRect()
     if (!box) return
+    const offsetX = clientX - box.left - box.width / 2
+    const offsetY = clientY - box.top - box.height / 2
     setExactHex(null)
-    setHue(normalizeHue(Math.atan2(clientY - box.top - box.height / 2, clientX - box.left - box.width / 2) * 180 / Math.PI + 90))
+    setHue(normalizeHue(Math.atan2(offsetY, offsetX) * 180 / Math.PI + 90))
+    setMarkerRadius(Math.min(MARKER_EDGE_RADIUS, Math.hypot(offsetX, offsetY) / Math.min(box.width, box.height) * 100))
     setSaturation(100)
     setLightness(nextLightness ?? 50)
   }
@@ -390,7 +392,7 @@ function App() {
       {tool === 'image' ? <ImagePaletteWorkspace preview={imagePreview} imageName={imageName} colors={imageColors} count={imageColorCount} status={imageStatus} fileInput={imageInput} onFile={loadImage} onCount={setImageColorCount} onUseColor={useImageColor} onCreate={createImagePalette} onAdd={addImageColors} canAdd={palette.length < 12} /> : <>
       <div className="wheel-stage">
         <div className="wheel-meta"><span>Rueda {mode === 'ryb' ? 'artística RYB' : 'digital RGB'}</span><span className="wheel-switches"><button onClick={() => { setExactHex(null); setMode(mode === 'ryb' ? 'rgb' : 'ryb') }}>Cambiar a {mode === 'ryb' ? 'RGB' : 'RYB'} ↗</button><button className={wheelExpanded ? 'active' : ''} onClick={() => setWheelExpanded((value) => !value)}>{wheelExpanded ? 'Volver a rueda' : 'Rueda ampliada'} ↗</button></span></div>
-        <div ref={wheel} className={`color-wheel ${mode} ${wheelExpanded ? 'expanded' : ''}`} role="application" aria-label={wheelExpanded ? 'Rueda ampliada con anillos de colores claros, medios y profundos' : 'Rueda de color'} onPointerDown={(event) => { event.currentTarget.setPointerCapture(event.pointerId); pick(event.clientX, event.clientY) }} onPointerMove={(event) => { if (event.currentTarget.hasPointerCapture(event.pointerId)) pick(event.clientX, event.clientY) }}>
+        <div ref={wheel} className={`color-wheel ${mode} ${wheelExpanded ? 'expanded' : ''}`} role="application" aria-label={wheelExpanded ? 'Rueda ampliada con cinco niveles de intensidad' : 'Rueda de color'} onPointerDown={(event) => { event.currentTarget.setPointerCapture(event.pointerId); pick(event.clientX, event.clientY) }} onPointerMove={(event) => { if (event.currentTarget.hasPointerCapture(event.pointerId)) pick(event.clientX, event.clientY) }}>
           {wheelExpanded && wheelBands.map((band) => <button key={band.id} type="button" className={`wheel-band ${mode} ${band.id}`} onClick={() => adjustLightness(band.lightness)} onPointerDown={(event) => { event.stopPropagation(); event.currentTarget.setPointerCapture(event.pointerId); pick(event.clientX, event.clientY, band.lightness) }} onPointerMove={(event) => { if (event.currentTarget.hasPointerCapture(event.pointerId)) pick(event.clientX, event.clientY, band.lightness) }} aria-label={`Seleccionar una versión ${band.label.toLowerCase()} del matiz`}>{band.label}</button>)}
           <div className="wheel-grain" /><div className="wheel-center"><span>COLOR<br />ACTUAL</span><strong>{active}</strong></div><i className="wheel-marker" style={markerPosition} />
         </div>
