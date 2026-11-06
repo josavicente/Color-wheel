@@ -11,6 +11,7 @@
     "build": "node scripts/with-node.mjs ./node_modules/.bin/tsc -b && node scripts/with-node.mjs ./node_modules/.bin/vite build && node scripts/with-node.mjs node scripts/generate-sitemap.mjs",
     "preview": "node scripts/with-node.mjs ./node_modules/.bin/vite preview",
     "check": "node scripts/with-node.mjs ./node_modules/.bin/tsc -b --pretty false",
+    "test:mixing": "node scripts/with-node.mjs node scripts/test-mixing.mjs",
     "sync:catalog": "node scripts/with-node.mjs scripts/sync-paint-catalog.mjs"
   },
   "dependencies": {

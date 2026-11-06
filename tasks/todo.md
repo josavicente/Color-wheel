@@ -1,5 +1,50 @@
 # Planificación de ColorWheel
 
+## Publicación — mezclador con pinturas y recetas · 6 de noviembre de 2026
+
+- [x] Comprobar rama y estado remoto, conservar los assets ajenos al cambio.
+- [x] Actualizar CHANGELOG, README y novedades versionadas del Estudio.
+- [x] Comprobar tipos, build y pruebas antes de publicar.
+- [ ] Crear commit y publicar la rama de trabajo.
+- [ ] Integrar en main, publicar main y verificar que el remoto incluye el cambio.
+
+### Revisión
+
+Tipos, build de producción, `npm run test:mixing` y revisión de whitespace superados. Añadida entrada 0.2.0 conectada a las novedades del Estudio. Corregido el comando npm de pruebas para ejecutar el script con Node. Publicación solicitada por el usuario en curso.
+
+## Iteración — mezclador con pinturas y recetas · 6 de noviembre de 2026
+
+Rama: `codex/mezclador-pinturas-recetas`. Alcance aprobado con exclusión expresa de «Mis pinturas» e inventario. Se mantienen las paletas del Estudio y las marcas favoritas existentes.
+
+- [x] Crear selector contextual reutilizable por marca, gama y búsqueda, con favoritas, recientes y filtros recordados.
+- [x] Integrar el selector en ingredientes y en la incorporación de pinturas a la paleta; conservar identidad de catálogo.
+- [x] Independizar todos los ingredientes de la rueda, permitir editar sus partes y reutilizar muestras de la paleta.
+- [x] Mostrar receta con partes y porcentajes; persistir mezcla y recetas, recuperarlas y exportar PNG con sus datos.
+- [x] Comparar variantes 1:1, 2:1 y 1:2 para mezclas de dos ingredientes, etiquetando el resultado como estimación digital.
+- [x] Verificar búsqueda y selección, independencia de rueda, persistencia, recetas/PNG, teclado y móvil; ejecutar tipos, build y revisión independiente.
+- [x] Actualizar documentación y registrar resultados comprobados.
+
+### Diseño y aceptación
+
+- Seleccionar una pintura modifica solo el ingrediente solicitado; consultar equivalencias del resultado conserva la receta.
+- Marca y gama son filtros distintos. Las gamas respetan el índice del catálogo. Favoritas facilita el acceso sin ocultar las demás marcas.
+- Cada muestra de pintura conserva nombre, marca, gama, referencia e identificador. Una edición libre de HEX elimina la identidad anterior.
+- De uno a seis ingredientes con partes ajustables uniformemente; guardar una receta conserva instantánea de ingredientes y proporciones.
+- El selector es un diálogo con foco contenido, cierre con Escape y retorno al control de origen; sin resultados se ofrece limpiar filtros.
+- Los datos previos de paletas y marcas favoritas siguen siendo utilizables. No se crean inventario ni colección «Mis pinturas».
+- La búsqueda inversa para alcanzar un color objetivo queda como evolución posterior a validar el modelo físico de mezcla.
+
+### Revisión
+
+- Tipos, build de producción, pruebas de dominio (`npm run test:mixing`) y `git diff --check` superados. Las pruebas cubren proporciones, límites, identidad de pinturas, copias independientes y recuperación de datos locales corruptos.
+- Verificado en navegador: marca Vallejo, gama Game Color y referencia 72.006; segunda pintura Squid Orange 74.211; variante 2:1 con resultado #FBC917; guardar, recargar y cargar conserva pinturas y partes.
+- Descargado y revisado un PNG real de la receta «Sol cálido», con nombre, marca, gama, referencia, HEX, partes y porcentajes.
+- Comprobados incorporación de mezcla y pintura al Estudio, detalle de receta, identidad de origen y recuperación mediante Deshacer. La paleta previa de tres muestras se restauró al terminar la prueba.
+- Verificados primer ingrediente ajustable hasta ocho partes, máximo de seis ingredientes, edición HEX que elimina origen y rechazo de HEX incompleto sin alterar la mezcla válida.
+- Comprobados filtros recordados, recientes, estado sin coincidencias y Escape con retorno al botón de origen. Vista de 375 px sin desbordamiento horizontal tanto en mezclador como selector.
+- Revisión técnica independiente completada; corregidos aviso de éxito con paleta llena y consumo inicial de Escape por el campo de búsqueda nativo.
+- Actualizados README, CHANGELOG y guía del catálogo. Sin inventario, sin cambios de modelo físico y sin publicación remota.
+
 Fecha: 3 de noviembre de 2026. Rama: `codex/plan-color-wheel`.
 
 ## Trabajo de esta sesión

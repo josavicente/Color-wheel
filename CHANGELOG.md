@@ -1,5 +1,14 @@
 # Changelog
 
+## 2026-11-06
+
+- Publicada la entrada de novedades 0.2.0 en el Estudio con selección por marca y recetas de mezcla.
+- Añadido selector contextual de pinturas por marca, gama, nombre, referencia, tipo o HEX, con accesos a marcas favoritas, recientes y filtros recordados.
+- La paleta permite incorporar pinturas directamente y conservar su identidad; las ediciones libres de color eliminan la asociación anterior.
+- Rediseñado el mezclador con hasta seis ingredientes independientes de la rueda y partes ajustables para todos.
+- Añadidos títulos, partes y porcentajes de receta, guardado local de mezclas y recetas, recuperación y exportación PNG con las pinturas utilizadas.
+- Añadida comparación visual de proporciones 1:1, 2:1 y 1:2 para mezclas de dos ingredientes. Los resultados se identifican como estimaciones digitales RGB.
+
 ## 2026-11-03
 
 - Integrado un catálogo reproducible de 7.376 pinturas en 62 gamas, con nombre, gama, referencia y código HEX.

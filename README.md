@@ -4,6 +4,8 @@ Proyecto de web con React y TypeScript para experimentar con una rueda de color 
 
 Estado: primera entrega funcional implementada.
 
+El Estudio muestra las novedades versionadas de la aplicación; la entrada 0.2.0 presenta la selección de pinturas por marca y las recetas de mezcla.
+
 ## Ejecutar localmente
 
 El despliegue usa Node 24.x, versión LTS disponible en Vercel. Los scripts locales aceptan Node 24 o superior; desde una terminal antigua usan la versión gestionada con fnm para evitar incompatibilidades.
@@ -27,6 +29,8 @@ La URL pública actual de Vercel está versionada en `.env.production`. El build
 La aplicación permite explorar una rueda RYB/RGB continua con selección directa y marcador posicionado en la posición real del toque, incluido el perímetro útil, además de una rueda ampliada con cinco anillos, desde muy profundo hasta muy claro; probar siete armonías de color; extraer localmente de 4 a 12 colores predominantes desde una fotografía; crear y editar paletas; combinar hasta seis colores con proporciones y ver sus equivalencias de pintura; guardar copias locales; recuperar acciones; exportar desde el Estudio de color un PNG con hasta ocho equivalencias por muestra (nombre, marca, gama, referencia o tipo y HEX); y reutilizar los valores como JSON o variables CSS. La interfaz se adapta a móvil con controles táctiles y una sola columna para el catálogo.
 
 Incluye una biblioteca local de 7.376 pinturas de 62 gamas, accesible en su propia vista de Pinturas, con búsqueda por nombre, referencia, tipo o HEX. Cada ficha identifica su tipo de pintura (por ejemplo, Shade, Contrast, Base o Metallic) y muestra sus equivalencias más cercanas. Una página dedicada de marcas permite guardar favoritas en el navegador para limitar todas las recomendaciones —incluidas las del mezclador y cada muestra del Estudio de color— a esas marcas. El selector de gamas mantiene su orden de sincronización. Al seleccionar una pintura, su HEX se conserva exactamente en modo RGB y se vuelve al Estudio.
+
+El mezclador y la paleta ofrecen un selector contextual por marca y gama, con búsqueda, marcas favoritas, pinturas recientes y filtros recordados. Las pinturas elegidas conservan nombre, marca, gama y referencia. Cada ingrediente del mezclador tiene sus propias partes y permanece independiente de los cambios de la rueda; también se pueden reutilizar muestras de la paleta. Las recetas muestran proporciones y porcentajes, se guardan localmente y se exportan en PNG con las pinturas utilizadas. Para dos ingredientes se comparan las variantes 1:1, 2:1 y 1:2. El resultado es una estimación visual RGB. Estas funciones utilizan el catálogo y las paletas existentes, sin inventario de pinturas.
 
 Para refrescar el catálogo desde un origen compatible:
 
