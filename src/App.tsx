@@ -1,14 +1,20 @@
 import { useEffect, useMemo, useRef, useState, type RefObject } from 'react'
-import { colorDistance, contrastText, hexToHsl, mixHex, mixManyHex, newColor, normalizeHue, PaletteColor, wheelColor } from './color'
+import { colorDistance, contrastText, hexToHsl, mixHex, newColor, normalizeHue, type PaletteColor, wheelColor } from './color'
 import type { PaintCatalogEntry, PaintRange } from './data/paint-catalog'
 import { extractImagePalette } from './image-palette'
+import { paintBrand } from './paint'
+import PaintPicker from './PaintPicker'
+import MixerWorkspace from './MixerWorkspace'
+import type { MixRecipe } from './mixing'
+import { exportRecipePng } from './recipe-export'
+import { changelog } from './features/home/config/changelog'
+import { homeTranslations } from './features/home/config/translations'
 
 type Tool = 'explore' | 'harmony' | 'mix' | 'image'
 type WheelMode = 'ryb' | 'rgb'
 type Page = 'studio' | 'brands' | 'catalog'
 type Harmony = 'Complementaria' | 'Complementaria dividida' | 'Tríada' | 'Tétrada' | 'Cuadrada' | 'Análoga' | 'Monocromática'
 type SavedPalette = { id: string; title: string; palette: PaletteColor[] }
-type MixColor = { id: string; hex: string; parts: number }
 
 const STORAGE_KEY = 'colorwheel-workspace-v1'
 const seed = [
@@ -37,15 +43,6 @@ const harmonyDefinitions: Record<Harmony, Array<{ hue: number; lightnessOffset?:
 }
 const PALETTE_MATCH_LIMIT = 8
 
-function paintBrand(paint: PaintCatalogEntry) {
-  if (paint.range.startsWith('AK Interactive')) return 'AK Interactive'
-  if (paint.range.startsWith('The Army Painter')) return 'The Army Painter'
-  if (paint.range.startsWith('Vallejo')) return 'Vallejo'
-  if (paint.range.startsWith('Scale75')) return 'Scale75'
-  if (paint.range.startsWith('Monument Hobbies')) return 'Monument Hobbies'
-  return paint.range
-}
-
 function brandMonogram(brand: string) {
   return brand.split(/\s+/).filter((word) => !['de', 'the', 'and'].includes(word.toLocaleLowerCase())).map((word) => word[0]).join('').slice(0, 3).toUpperCase()
 }
@@ -61,7 +58,7 @@ function exportPng(palette: PaletteColor[], matches: PaintCatalogEntry[][], titl
   const gap = 28
   const columns = palette.length === 1 ? 1 : 2
   const cardWidth = (width - margin * 2 - gap * (columns - 1)) / columns
-  const rowHeights = Array.from({ length: Math.ceil(palette.length / columns) }, (_, row) => Math.max(...palette.slice(row * columns, row * columns + columns).map((_, column) => 170 + (matches[row * columns + column]?.length || 0) * 56)))
+  const rowHeights = Array.from({ length: Math.ceil(palette.length / columns) }, (_, row) => Math.max(...palette.slice(row * columns, row * columns + columns).map((color, column) => 170 + (color.paint ? 38 : 0) + (matches[row * columns + column]?.length || 0) * 56)))
   const height = 220 + rowHeights.reduce((total, rowHeight) => total + rowHeight, 0) + gap * Math.max(0, rowHeights.length - 1) + margin
   const canvas = document.createElement('canvas')
   canvas.width = width * scale
@@ -95,10 +92,16 @@ function exportPng(palette: PaletteColor[], matches: PaintCatalogEntry[][], titl
     context.font = '600 25px Georgia, serif'
     context.fillText(color.name || `Color ${index + 1}`, x, y + 118)
     context.fillStyle = dark ? '#B7B3AA' : '#716F67'
+    const originHeight = color.paint ? 38 : 0
+    if (color.paint) {
+      context.font = '500 12px monospace'
+      context.fillText(`Pintura · ${paintBrand(color.paint)} · ${color.paint.code || color.paint.type}`, x, y + 143, cardWidth)
+      context.fillText(`Gama · ${color.paint.range}`, x, y + 161, cardWidth)
+    }
     context.font = '600 13px monospace'
-    context.fillText('PINTURAS CORRESPONDIENTES', x, y + 148)
+    context.fillText('PINTURAS CORRESPONDIENTES', x, y + 148 + originHeight)
     matches[index]?.forEach((paint, paintIndex) => {
-      const paintY = y + 168 + paintIndex * 56
+      const paintY = y + 168 + originHeight + paintIndex * 56
       context.fillStyle = paint.hex
       context.fillRect(x, paintY, 26, 26)
       context.fillStyle = ink
@@ -144,7 +147,8 @@ function App() {
   const [showHex, setShowHex] = useState(true)
   const [wheelExpanded, setWheelExpanded] = useState(false)
   const [markerRadius, setMarkerRadius] = useState(42)
-  const [mixColors, setMixColors] = useState<MixColor[]>([{ id: crypto.randomUUID(), hex: '#F6B328', parts: 1 }])
+  const [palettePickerOpen, setPalettePickerOpen] = useState(false)
+  const [recentPaintIds, setRecentPaintIds] = useState<string[]>(() => Array.isArray(saved.recentPaintIds) ? saved.recentPaintIds.filter((id: unknown) => typeof id === 'string').slice(0, 12) : [])
   const [paintSearch, setPaintSearch] = useState('')
   const [paintRange, setPaintRange] = useState('Todas las gamas')
   const [paintLimit, setPaintLimit] = useState(30)
@@ -166,7 +170,6 @@ function App() {
   const active = useMemo(() => exactHex ?? wheelColor(hue, mode, saturation, lightness), [exactHex, hue, mode, saturation, lightness])
   const markerAngle = (hue - 90) * Math.PI / 180
   const markerPosition = { left: `${50 + Math.cos(markerAngle) * markerRadius}%`, top: `${50 + Math.sin(markerAngle) * markerRadius}%` }
-  const mix = useMemo(() => mixManyHex([{ hex: active, weight: 1 }, ...mixColors.map((color) => ({ hex: color.hex, weight: color.parts }))]), [active, mixColors])
   const harmonyColors = useMemo(() => harmonyDefinitions[harmony].map((definition) => wheelColor(hue + definition.hue, mode, Math.max(0, Math.min(100, saturation * (definition.saturationScale ?? 1))), Math.max(8, Math.min(92, lightness + (definition.lightnessOffset ?? 0))))), [harmony, hue, mode, saturation, lightness])
   const paintRanges = useMemo(() => paintRangeIndex.map((range) => range.name), [paintRangeIndex])
   const paintBrands = useMemo(() => [...new Set(paintCatalog.map(paintBrand))].sort((left, right) => left.localeCompare(right, 'es')), [paintCatalog])
@@ -176,9 +179,6 @@ function App() {
   const closePaints = useMemo(() => [...suggestedPaintCatalog]
     .sort((left, right) => colorDistance(active, left.hex) - colorDistance(active, right.hex))
     .slice(0, 5), [active, suggestedPaintCatalog])
-  const closeMixPaints = useMemo(() => [...suggestedPaintCatalog]
-    .sort((left, right) => colorDistance(mix, left.hex) - colorDistance(mix, right.hex))
-    .slice(0, 5), [mix, suggestedPaintCatalog])
   const palettePaintMatches = useMemo(() => palette.map((color) => [...suggestedPaintCatalog]
     .sort((left, right) => colorDistance(color.hex, left.hex) - colorDistance(color.hex, right.hex))
     .slice(0, PALETTE_MATCH_LIMIT)), [palette, suggestedPaintCatalog])
@@ -190,7 +190,7 @@ function App() {
       return rangeMatch && searchMatch
     })
   }, [paintCatalog, paintRange, paintSearch])
-  useEffect(() => { localStorage.setItem(STORAGE_KEY, JSON.stringify({ palette, title, library, favoriteBrands })) }, [favoriteBrands, palette, title, library])
+  useEffect(() => { localStorage.setItem(STORAGE_KEY, JSON.stringify({ palette, title, library, favoriteBrands, recentPaintIds })) }, [favoriteBrands, palette, title, library, recentPaintIds])
   useEffect(() => {
     const syncPage = () => setPage(window.location.hash === '#pinturas' ? 'catalog' : window.location.hash === '#marcas' ? 'brands' : 'studio')
     window.addEventListener('hashchange', syncPage)
@@ -231,18 +231,18 @@ function App() {
     setFuture([])
     setPalette(next)
   }
-  const add = (hex = active, name = 'Nuevo color') => {
+  const add = (hex = active, name = 'Nuevo color', recipe?: MixRecipe, paint?: PaintCatalogEntry) => {
     if (palette.length === 12) { setNotice('Llegaste a 12 colores. Edita o elimina una muestra para continuar.'); return }
-    commit([...palette, newColor(hex, name)])
+    commit([...palette, { ...newColor(hex, name), recipe, paint }])
     setSelected(palette.length)
     setNotice('Color añadido a la paleta')
   }
-  const replace = (hex: string) => {
-    if (selected === null || palette[selected].locked) { add(hex); return }
-    commit(palette.map((color, index) => index === selected ? { ...color, hex } : color))
+  const replace = (hex: string, recipe?: MixRecipe) => {
+    if (selected === null || palette[selected].locked) { add(hex, recipe?.title, recipe); return }
+    commit(palette.map((color, index) => index === selected ? { ...color, hex, paint: undefined, recipe, name: recipe?.title || color.name } : color))
     setNotice('Muestra actualizada')
   }
-  const update = (index: number, patch: Partial<PaletteColor>) => commit(palette.map((color, position) => position === index ? { ...color, ...patch } : color))
+  const update = (index: number, patch: Partial<PaletteColor>) => commit(palette.map((color, position) => position === index ? { ...color, ...(patch.hex ? { paint: undefined, recipe: undefined } : {}), ...patch } : color))
   const move = (index: number, direction: number) => {
     const target = index + direction
     if (target < 0 || target >= palette.length) return
@@ -298,12 +298,12 @@ function App() {
     if (!next) return
     setHistory((items) => [...items, palette]); setPalette(next); setFuture((items) => items.slice(1)); setNotice('Cambio rehecho')
   }
-  const updateMixColor = (id: string, patch: Partial<MixColor>) => setMixColors((colors) => colors.map((color) => color.id === id ? { ...color, ...patch } : color))
-  const addMixColor = () => {
-    if (mixColors.length >= 5) { setNotice('Puedes combinar hasta seis colores, incluido el color actual.'); return }
-    setMixColors((colors) => [...colors, { id: crypto.randomUUID(), hex: '#5EAD57', parts: 1 }])
+  const rememberPaint = (paint: PaintCatalogEntry) => setRecentPaintIds((ids) => [paint.id, ...ids.filter((id) => id !== paint.id)].slice(0, 12))
+  const exportPaletteRecipe = (recipe: MixRecipe) => {
+    void exportRecipePng(recipe).then(() => setNotice('Receta exportada en PNG')).catch(() => setNotice('No se pudo exportar la receta. Inténtalo de nuevo.'))
   }
-  const usePaint = (paint: { hex: string }) => {
+  const usePaint = (paint: PaintCatalogEntry) => {
+    rememberPaint(paint)
     setMode('rgb')
     pickHex(paint.hex)
     setNotice(`Color de pintura ${paint.hex} seleccionado`)
@@ -385,11 +385,12 @@ function App() {
     </header>
     {page === 'brands' ? <BrandsPage brands={paintBrands} favorites={favoriteBrands} onToggle={toggleFavoriteBrand} onReturn={() => { window.location.hash = '#top' }} /> : page === 'catalog' ? <CatalogPage paints={filteredPaints} ranges={paintRanges} catalogSize={paintCatalog.length} updatedAt={paintCatalogUpdatedAt} search={paintSearch} range={paintRange} limit={paintLimit} onSearch={(value) => { setPaintSearch(value); setPaintLimit(30) }} onRange={(value) => { setPaintRange(value); setPaintLimit(30) }} onMore={() => setPaintLimit((limit) => limit + 30)} onPick={(paint) => { usePaint(paint); window.location.hash = '#top' }} onReturn={() => { window.location.hash = '#top' }} /> : <>
     <section className="intro" id="top"><div><p className="eyebrow">Rueda de color para miniaturas</p><h1>Encuentra un color.<br /><em>Hazlo tuyo.</em></h1></div><p>Una rueda de color y generador de paletas para explorar relaciones, guardar hallazgos y llevar tus pinturas de miniaturas contigo.</p></section>
+    <details className="release-note"><summary>{homeTranslations.es.changelogLabel} · {changelog[0].version} · {changelog[0].title}</summary><p>{changelog[0].description}</p></details>
     <nav className="tool-nav" aria-label="Herramientas de color">
       {([['explore', '01', 'Explorar'], ['harmony', '02', 'Armonías'], ['mix', '03', 'Mezclar'], ['image', '04', 'Foto']] as [Tool, string, string][]).map(([id, number, label]) => <button key={id} className={tool === id ? 'tool-tab active' : 'tool-tab'} onClick={() => setTool(id)}><span>{number}</span>{label}</button>)}
     </nav>
     <section className="workspace" aria-label="Espacio de experimentación">
-      {tool === 'image' ? <ImagePaletteWorkspace preview={imagePreview} imageName={imageName} colors={imageColors} count={imageColorCount} status={imageStatus} fileInput={imageInput} onFile={loadImage} onCount={setImageColorCount} onUseColor={useImageColor} onCreate={createImagePalette} onAdd={addImageColors} canAdd={palette.length < 12} /> : <>
+      {tool === 'mix' ? <MixerWorkspace active={active} palette={palette} paints={paintCatalog} ranges={paintRangeIndex} favorites={favoriteBrands} recentIds={recentPaintIds} onRemember={rememberPaint} onAdd={add} onReplace={replace} canReplace={selected !== null && !palette[selected]?.locked} /> : tool === 'image' ? <ImagePaletteWorkspace preview={imagePreview} imageName={imageName} colors={imageColors} count={imageColorCount} status={imageStatus} fileInput={imageInput} onFile={loadImage} onCount={setImageColorCount} onUseColor={useImageColor} onCreate={createImagePalette} onAdd={addImageColors} canAdd={palette.length < 12} /> : <>
       <div className="wheel-stage">
         <div className="wheel-meta"><span>Rueda {mode === 'ryb' ? 'artística RYB' : 'digital RGB'}</span><span className="wheel-switches"><button onClick={() => { setExactHex(null); setMode(mode === 'ryb' ? 'rgb' : 'ryb') }}>Cambiar a {mode === 'ryb' ? 'RGB' : 'RYB'} ↗</button><button className={wheelExpanded ? 'active' : ''} onClick={() => setWheelExpanded((value) => !value)}>{wheelExpanded ? 'Volver a rueda' : 'Rueda ampliada'} ↗</button></span></div>
         <div ref={wheel} className={`color-wheel ${mode} ${wheelExpanded ? 'expanded' : ''}`} role="application" aria-label={wheelExpanded ? 'Rueda ampliada con cinco niveles de intensidad' : 'Rueda de color'} onPointerDown={(event) => { event.currentTarget.setPointerCapture(event.pointerId); pick(event.clientX, event.clientY) }} onPointerMove={(event) => { if (event.currentTarget.hasPointerCapture(event.pointerId)) pick(event.clientX, event.clientY) }}>
@@ -407,15 +408,16 @@ function App() {
           <div className="variation-set"><p>Variaciones rápidas</p><div>{[['Blanco', '#FFFFFF'], ['Gris', '#8A8A84'], ['Negro', '#11120F']].map(([name, target]) => <button key={name} style={{ background: mixHex(active, target, .42), color: contrastText(mixHex(active, target, .42)) }} onClick={() => add(mixHex(active, target, .42), `${name} de ${active}`)}>{name}</button>)}</div></div>
         </>}
         {tool === 'harmony' && <><p className="panel-kicker">Relaciones sobre la rueda</p><h2>Deja que el<br /><em>color responda.</em></h2><div className="harmony-options">{harmonyOptions.map((option) => <button key={option} className={option === harmony ? 'selected' : ''} onClick={() => setHarmony(option)}>{option}</button>)}</div><div className="harmony-samples">{harmonyColors.map((color, index) => <button key={`${color}-${index}`} style={{ background: color, color: contrastText(color) }} onClick={() => add(color, `${harmony} ${index + 1}`)}>{color}</button>)}</div><p className="help-copy">Elige una muestra concreta o incorpora toda la relación a tu colección.</p><button className="primary-action wide" onClick={addHarmonyColors}>Añadir relación completa</button></>}
-        {tool === 'mix' && <><p className="panel-kicker">Mezcla digital</p><h2>Prueba sin<br /><em>gastar pintura.</em></h2><div className="mix-workbench"><div className="mix-base"><span style={{ background: active }} /><div><b>Color actual</b><small>{active} · 1 parte</small></div></div>{mixColors.map((color, index) => <div className="mix-input" key={color.id}><input type="color" value={color.hex} onChange={(event) => updateMixColor(color.id, { hex: event.target.value.toUpperCase() })} aria-label={`Color de mezcla ${index + 2}`} /><label>Color {index + 2}<input type="text" value={color.hex} maxLength={7} onChange={(event) => /^#?[0-9A-Fa-f]{0,6}$/.test(event.target.value) && updateMixColor(color.id, { hex: event.target.value.startsWith('#') ? event.target.value.toUpperCase() : `#${event.target.value.toUpperCase()}` })} /></label><label className="mix-parts">Partes <input type="range" min="1" max="8" value={color.parts} onChange={(event) => updateMixColor(color.id, { parts: Number(event.target.value) })} /><output>{color.parts}</output></label><button className="remove-mix" onClick={() => setMixColors((colors) => colors.filter((item) => item.id !== color.id))} aria-label={`Quitar color ${index + 2}`}>×</button></div>)}</div><button className="add-mix" onClick={addMixColor}>+ Añadir otro color</button><div className="mix-result"><span>Resultado</span><strong style={{ background: mix, color: contrastText(mix) }}>{mix}</strong></div><PaintMatches paints={closeMixPaints} loading={!paintCatalog.length} onPick={usePaint} label="Equivalencias de pintura" /><p className="help-copy">Cada parte pesa en el promedio de mezcla. Ajusta las partes para probar recetas de hasta seis colores.</p><div className="button-row"><button className="primary-action" onClick={() => add(mix, 'Mezcla')}>+ Añadir mezcla</button><button className="ghost-action" disabled={selected === null || palette[selected]?.locked} onClick={() => replace(mix)}>Sustituir</button></div></>}
+
       </aside>
       </>}
     </section>
-    <section className="palette-area" aria-labelledby="palette-title"><div className="palette-heading"><div><p className="eyebrow">Tu colección</p><input id="palette-title" aria-label="Nombre de la paleta" value={title} onChange={(event) => setTitle(event.target.value)} /><p>{palette.length ? `${palette.length} / 12 muestras · se guarda en este dispositivo` : 'Elige un punto en la rueda para empezar'}</p></div><div className="palette-actions"><button className="export-button palette-export" disabled={!palette.length} onClick={() => setExportOpen(true)}>Exportar PNG ↗</button><button className="text-button" disabled={!palette.length} onClick={saveCopy}>Guardar copia</button><button className="text-button" disabled={!palette.length} onClick={() => downloadData(JSON.stringify({ v: 1, title, palette }, null, 2), 'paleta-colorwheel.json', 'application/json')}>JSON</button><button className="text-button" disabled={!palette.length} onClick={() => copy(palette.map((color, index) => `--color-${index + 1}: ${color.hex};`).join('\n'), 'Variables CSS copiadas')}>CSS</button><button className="text-button" disabled={!palette.length} onClick={share}>Compartir</button><button className="text-button danger" disabled={!palette.length} onClick={() => { commit([]); setSelected(null); setNotice('Paleta vaciada; puedes recuperarla con Deshacer.') }}>Vaciar</button></div></div>
-      {palette.length ? <div className="palette-grid">{palette.map((color, index) => <article key={color.id} className={selected === index ? 'palette-card selected' : 'palette-card'} onClick={() => setSelected(index)}><div className="palette-chip" style={{ background: color.hex }}><span>{String(index + 1).padStart(2, '0')}</span><button className="lock-button" aria-label={color.locked ? 'Desbloquear muestra' : 'Bloquear muestra'} onClick={(event) => { event.stopPropagation(); update(index, { locked: !color.locked }) }}>{color.locked ? '●' : '○'}</button></div><div className="palette-card-body"><input className="color-name" value={color.name} onClick={(event) => event.stopPropagation()} onChange={(event) => update(index, { name: event.target.value })} aria-label={`Nombre del color ${index + 1}`} /><button className="hex" onClick={(event) => { event.stopPropagation(); copy(color.hex, 'HEX copiado') }}>{color.hex}</button><div className="card-controls"><input type="color" value={color.hex} disabled={color.locked} onClick={(event) => event.stopPropagation()} onChange={(event) => update(index, { hex: event.target.value.toUpperCase() })} aria-label={`Editar ${color.name}`} /><button disabled={index === 0} onClick={(event) => { event.stopPropagation(); move(index, -1) }}>←</button><button disabled={index === palette.length - 1} onClick={(event) => { event.stopPropagation(); move(index, 1) }}>→</button><button disabled={color.locked} onClick={(event) => { event.stopPropagation(); commit(palette.filter((_, position) => position !== index)); setSelected(null) }}>×</button></div><PaintMatches paints={palettePaintMatches[index]} loading={!paintCatalog.length} onPick={usePaint} label="Pinturas próximas" compact /></div></article>)}</div> : <div className="empty-palette"><span>+</span><p>Tu paleta está abierta.<br />Empieza por el color que te llame.</p><button className="primary-action" onClick={() => add()}>Añadir el color actual</button></div>}
+    <section className="palette-area" aria-labelledby="palette-title"><div className="palette-heading"><div><p className="eyebrow">Tu colección</p><input id="palette-title" aria-label="Nombre de la paleta" value={title} onChange={(event) => setTitle(event.target.value)} /><p>{palette.length ? `${palette.length} / 12 muestras · se guarda en este dispositivo` : 'Elige un punto en la rueda para empezar'}</p></div><div className="palette-actions"><button className="primary-action" disabled={palette.length >= 12} onClick={() => setPalettePickerOpen(true)}>+ Añadir pintura</button><button className="export-button palette-export" disabled={!palette.length} onClick={() => setExportOpen(true)}>Exportar PNG ↗</button><button className="text-button" disabled={!palette.length} onClick={saveCopy}>Guardar copia</button><button className="text-button" disabled={!palette.length} onClick={() => downloadData(JSON.stringify({ v: 1, title, palette }, null, 2), 'paleta-colorwheel.json', 'application/json')}>JSON</button><button className="text-button" disabled={!palette.length} onClick={() => copy(palette.map((color, index) => `--color-${index + 1}: ${color.hex};`).join('\n'), 'Variables CSS copiadas')}>CSS</button><button className="text-button" disabled={!palette.length} onClick={share}>Compartir</button><button className="text-button danger" disabled={!palette.length} onClick={() => { commit([]); setSelected(null); setNotice('Paleta vaciada; puedes recuperarla con Deshacer.') }}>Vaciar</button></div></div>
+      {palette.length ? <div className="palette-grid">{palette.map((color, index) => <article key={color.id} className={selected === index ? 'palette-card selected' : 'palette-card'} onClick={() => setSelected(index)}><div className="palette-chip" style={{ background: color.hex }}><span>{String(index + 1).padStart(2, '0')}</span><button className="lock-button" aria-label={color.locked ? 'Desbloquear muestra' : 'Bloquear muestra'} onClick={(event) => { event.stopPropagation(); update(index, { locked: !color.locked }) }}>{color.locked ? '●' : '○'}</button></div><div className="palette-card-body"><input className="color-name" value={color.name} onClick={(event) => event.stopPropagation()} onChange={(event) => update(index, { name: event.target.value })} aria-label={`Nombre del color ${index + 1}`} /><button className="hex" onClick={(event) => { event.stopPropagation(); copy(color.hex, 'HEX copiado') }}>{color.hex}</button><div className="palette-origin">{color.paint && <p>{paintBrand(color.paint)} · {color.paint.range} · {color.paint.code || color.paint.type}</p>}{color.recipe && <details onClick={(event) => event.stopPropagation()}><summary>Receta · {color.recipe.ingredients.length} ingredientes</summary>{color.recipe.ingredients.map((ingredient) => <p key={ingredient.id}>{ingredient.name} · {ingredient.parts} {ingredient.parts === 1 ? 'parte' : 'partes'}{ingredient.paint ? ` · ${paintBrand(ingredient.paint)} · ${ingredient.paint.code || ingredient.paint.type}` : ''}</p>)}<button className="text-button" onClick={() => exportPaletteRecipe(color.recipe!)}>Exportar receta PNG ↗</button></details>}</div><div className="card-controls"><input type="color" value={color.hex} disabled={color.locked} onClick={(event) => event.stopPropagation()} onChange={(event) => update(index, { hex: event.target.value.toUpperCase() })} aria-label={`Editar ${color.name}`} /><button disabled={index === 0} onClick={(event) => { event.stopPropagation(); move(index, -1) }}>←</button><button disabled={index === palette.length - 1} onClick={(event) => { event.stopPropagation(); move(index, 1) }}>→</button><button disabled={color.locked} onClick={(event) => { event.stopPropagation(); commit(palette.filter((_, position) => position !== index)); setSelected(null) }}>×</button></div><PaintMatches paints={palettePaintMatches[index]} loading={!paintCatalog.length} onPick={usePaint} label="Pinturas próximas" compact /></div></article>)}</div> : <div className="empty-palette"><span>+</span><p>Tu paleta está abierta.<br />Empieza por el color que te llame.</p><button className="primary-action" onClick={() => add()}>Añadir el color actual</button></div>}
     </section>
     <section className="paint-catalog" aria-labelledby="paint-catalog-title"><div className="catalog-heading"><div><p className="eyebrow">Biblioteca de pintura</p><h2 id="paint-catalog-title">Catálogo de pinturas<br /><em>con códigos HEX.</em></h2><p>{paintCatalog.length ? `${paintCatalog.length.toLocaleString('es-ES')} pinturas · ${paintRanges.length} gamas · actualización ${new Date(paintCatalogUpdatedAt).toLocaleDateString('es-ES')}` : 'Cargando catálogo local de pinturas…'}</p></div></div><section className="favorite-brands" aria-labelledby="favorite-brands-title"><div><p className="eyebrow" id="favorite-brands-title">Tus marcas favoritas</p><p>{favoriteBrands.length ? 'Las equivalencias se ajustan únicamente a estas marcas.' : 'Elige marcas para priorizar todas las equivalencias de pintura.'}</p></div><div className="favorite-brand-controls"><label>Agregar marca<select value="" disabled={!paintCatalog.length} onChange={(event) => addFavoriteBrand(event.target.value)}><option value="">Selecciona una marca</option>{paintBrands.filter((brand) => !favoriteBrands.includes(brand)).map((brand) => <option key={brand} value={brand}>{brand}</option>)}</select></label>{favoriteBrands.length > 0 && <button className="clear-favorites" onClick={() => { setFavoriteBrands([]); setNotice('Las equivalencias vuelven a usar todo el catálogo') }}>Usar todo el catálogo</button>}</div>{favoriteBrands.length > 0 && <div className="favorite-brand-list" aria-label="Marcas favoritas seleccionadas">{favoriteBrands.map((brand) => <button key={brand} onClick={() => setFavoriteBrands((brands) => brands.filter((item) => item !== brand))}>{brand}<span aria-hidden="true">×</span><span className="sr-only">Quitar {brand}</span></button>)}</div>}</section><div className="catalog-filters"><label>Buscar pintura, código, tipo o HEX<input value={paintSearch} disabled={!paintCatalog.length} onChange={(event) => { setPaintSearch(event.target.value); setPaintLimit(30) }} placeholder="Ej. Shade, Squid Orange, 74.211 o #F49444" /></label><label>Gama<select value={paintRange} disabled={!paintCatalog.length} onChange={(event) => { setPaintRange(event.target.value); setPaintLimit(30) }}><option>Todas las gamas</option>{paintRanges.map((range) => <option key={range}>{range}</option>)}</select></label></div><p className="catalog-result-count">{paintCatalog.length ? `${filteredPaints.length.toLocaleString('es-ES')} resultados · pulsa una pintura para llevar su HEX a la rueda.` : 'Preparando resultados…'}</p><div className="paint-grid">{filteredPaints.slice(0, paintLimit).map((paint) => <button className="paint-card" key={paint.id} onClick={() => usePaint(paint)}><i style={{ background: paint.hex }} /><span><b>{paint.name}</b><small>{paint.range}</small></span><em>{paint.hex}</em><small>{paint.code || '—'}</small><mark>{paint.type || 'Sin clasificar'}</mark></button>)}</div>{filteredPaints.length > paintLimit && <button className="show-more" onClick={() => setPaintLimit((limit) => limit + 30)}>Mostrar 30 pinturas más</button>}<p className="catalog-source">Los nombres y marcas pertenecen a sus respectivos propietarios.</p></section>
     {library.length > 0 && <section className="library" aria-label="Biblioteca de paletas"><p className="eyebrow">Biblioteca local · {library.length}</p><div>{library.map((entry) => <article key={entry.id}><button onClick={() => { commit(entry.palette); setTitle(entry.title); setSelected(null); setNotice('Paleta recuperada') }}><strong>{entry.title}</strong><span>{entry.palette.map((color) => color.hex).join(' · ')}</span></button><button className="remove-library" aria-label={`Eliminar ${entry.title}`} onClick={() => setLibrary((items) => items.filter((item) => item.id !== entry.id))}>×</button></article>)}</div></section>}
+    {palettePickerOpen && <PaintPicker paints={paintCatalog} ranges={paintRangeIndex} favorites={favoriteBrands} recentIds={recentPaintIds} onPick={(paint) => { add(paint.hex, paint.name, undefined, paint); rememberPaint(paint) }} onClose={() => setPalettePickerOpen(false)} />}
     {notice && <div className="toast" role="status">{notice}</div>}
     {exportOpen && <div className="modal-backdrop" onMouseDown={() => setExportOpen(false)}><section className="export-modal" role="dialog" aria-modal="true" aria-labelledby="export-title" onMouseDown={(event) => event.stopPropagation()}><button className="modal-close" onClick={() => setExportOpen(false)} aria-label="Cerrar">×</button><p className="eyebrow">Salida de estudio</p><h2 id="export-title">Tu paleta, <em>lista para salir.</em></h2><p className="export-equivalents-note">Incluye hasta {PALETTE_MATCH_LIMIT} equivalencias de pintura por muestra.</p><div className={exportDark ? 'export-preview dark' : 'export-preview'}>{palette.map((color) => <div key={color.id} style={{ background: color.hex, color: contrastText(color.hex) }}>{showHex && color.hex}</div>)}</div><div className="export-options"><fieldset><legend>Fondo</legend><button className={!exportDark ? 'selected' : ''} onClick={() => setExportDark(false)}>Claro</button><button className={exportDark ? 'selected' : ''} onClick={() => setExportDark(true)}>Oscuro</button></fieldset><label className="checkbox-label"><input type="checkbox" checked={showHex} onChange={(event) => setShowHex(event.target.checked)} /> Incluir HEX</label></div><div className="modal-footer"><p>PNG a 2× · altura según equivalencias</p><button className="primary-action" onClick={() => exportPng(palette, palettePaintMatches, title, exportDark, showHex)}>Descargar PNG ↗</button></div></section></div>}
     </>}

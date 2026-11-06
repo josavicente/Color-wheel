@@ -1,5 +1,11 @@
 # Lecciones y preferencias del proyecto
 
+## 2026-11-06 — Selección de pinturas sin inventario
+
+El usuario ha aprobado facilitar la elección por marca y las recetas del mezclador, excluyendo «Mis pinturas» del alcance.
+
+Regla: reutilizar catálogo, marcas favoritas, recientes y paletas existentes para seleccionar ingredientes. No añadir inventario de botes ni una colección de pinturas disponibles sin una petición explícita.
+
 ## 2026-11-03 — Prioridad de utilidad y experiencia
 
 El usuario ha destacado que experimentar, crear paletas propias y exportarlas como imagen es esencial.
