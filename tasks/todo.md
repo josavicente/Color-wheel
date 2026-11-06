@@ -5,12 +5,14 @@
 - [x] Comprobar rama y estado remoto, conservar los assets ajenos al cambio.
 - [x] Actualizar CHANGELOG, README y novedades versionadas del Estudio.
 - [x] Comprobar tipos, build y pruebas antes de publicar.
-- [ ] Crear commit y publicar la rama de trabajo.
-- [ ] Integrar en main, publicar main y verificar que el remoto incluye el cambio.
+- [x] Crear commit y publicar la rama de trabajo.
+- [x] Integrar en main, publicar main y verificar que el remoto incluye el cambio.
 
 ### Revisión
 
-Tipos, build de producción, `npm run test:mixing` y revisión de whitespace superados. Añadida entrada 0.2.0 conectada a las novedades del Estudio. Corregido el comando npm de pruebas para ejecutar el script con Node. Publicación solicitada por el usuario en curso.
+Tipos, build de producción, `npm run test:mixing` y revisión de whitespace superados. Añadida entrada 0.2.0 conectada a las novedades del Estudio. Corregido el comando npm de pruebas para ejecutar el script con Node.
+
+Rama publicada con el commit `a0988c6` e integrada en `main` mediante `be4f653`, sin conflictos. Push de `main` completado y verificada la presencia del commit de funcionalidad en `origin/main`. Los assets locales previos siguen sin incluirse en los commits.
 
 ## Iteración — mezclador con pinturas y recetas · 6 de noviembre de 2026
 
